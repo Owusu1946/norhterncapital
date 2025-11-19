@@ -128,17 +128,6 @@ export function Footer() {
                   Subscribe
                 </button>
               </div>
-              <div className="space-y-2">
-                <h5 className="text-sm font-medium text-black">Services</h5>
-                <ul className="space-y-1 text-xs text-black/60">
-                  <li>• Free WiFi</li>
-                  <li>• Airport Shuttle</li>
-                  <li>• Restaurant & Bar</li>
-                  <li>• Conference Rooms</li>
-                  <li>• Fitness Center</li>
-                  <li>• Swimming Pool</li>
-                </ul>
-              </div>
             </div>
           </div>
         </div>

@@ -344,43 +344,45 @@ export function BookingCard({
           />
           
           {/* Modal */}
-          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 transform">
-            <div className="mx-4 max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 transform px-4">
+            <div className="max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
               {/* Modal Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Available Rooms</h2>
-                  <p className="mt-1 text-sm text-gray-600">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-4 sm:px-6 py-3 sm:py-4">
+                <div className="flex-1 min-w-0 pr-2">
+                  <h2 className="text-lg sm:text-2xl font-semibold text-gray-900">Available Rooms</h2>
+                  <p className="mt-1 text-xs sm:text-sm text-gray-600 truncate">
                     {checkInDate && checkOutDate && (
                       <>
-                        {format(checkInDate, "MMM d, yyyy")} - {format(checkOutDate, "MMM d, yyyy")} 
-                        <span className="ml-2 text-gray-400">•</span>
-                        <span className="ml-2">{differenceInDays(checkOutDate, checkInDate)} nights</span>
+                        <span className="hidden sm:inline">{format(checkInDate, "MMM d, yyyy")} - {format(checkOutDate, "MMM d, yyyy")}</span>
+                        <span className="sm:hidden">{format(checkInDate, "MMM d")} - {format(checkOutDate, "MMM d")}</span>
+                        <span className="ml-1 sm:ml-2 text-gray-400">•</span>
+                        <span className="ml-1 sm:ml-2">{differenceInDays(checkOutDate, checkInDate)} nights</span>
                       </>
                     )}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowSearchResults(false)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+                  className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation flex-shrink-0"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                   aria-label="Close"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
 
               {/* Search Results */}
-              <div className="p-6">
+              <div className="p-3 sm:p-6">
                 {searchResults.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {searchResults.map((room) => (
                       <div
                         key={room.id}
-                        className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow hover:shadow-lg"
+                        className="overflow-hidden rounded-xl sm:rounded-2xl border border-gray-200 bg-white transition-shadow hover:shadow-lg"
                       >
                         <div className="flex flex-col md:flex-row">
                           {/* Room Image */}
-                          <div className="relative h-48 w-full md:h-auto md:w-64">
+                          <div className="relative h-40 sm:h-48 w-full md:h-auto md:w-64 flex-shrink-0">
                             <Image
                               src={room.image}
                               alt={room.name}
@@ -390,58 +392,62 @@ export function BookingCard({
                           </div>
 
                           {/* Room Details */}
-                          <div className="flex flex-1 flex-col p-6">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h3 className="text-xl font-semibold text-gray-900">{room.name}</h3>
-                                <p className="mt-1 text-sm text-gray-600">{room.description}</p>
+                          <div className="flex flex-1 flex-col p-4 sm:p-6">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base sm:text-xl font-semibold text-gray-900">{room.name}</h3>
+                                <p className="mt-1 text-xs sm:text-sm text-gray-600 line-clamp-2">{room.description}</p>
                               </div>
-                              <div className="ml-4 flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
-                                <CheckCircle className="h-4 w-4" />
-                                {room.available} available
+                              <div className="flex items-center gap-1 rounded-full bg-green-100 px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-green-700 whitespace-nowrap flex-shrink-0">
+                                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                                <span className="hidden sm:inline">{room.available} available</span>
+                                <span className="sm:hidden">{room.available}</span>
                               </div>
                             </div>
 
                             {/* Amenities */}
-                            <div className="mt-4 flex flex-wrap gap-3">
+                            <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3">
                               {room.amenities.slice(0, 4).map((amenity, index) => (
-                                <div key={index} className="flex items-center gap-1.5 text-sm text-gray-600">
-                                  {amenity === "Free WiFi" && <Wifi className="h-4 w-4" />}
-                                  {amenity === "TV" && <Tv className="h-4 w-4" />}
-                                  {amenity === "Coffee Maker" && <Coffee className="h-4 w-4" />}
+                                <div key={index} className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-gray-600">
+                                  {amenity === "Free WiFi" && <Wifi className="h-3 w-3 sm:h-4 sm:w-4" />}
+                                  {amenity === "TV" && <Tv className="h-3 w-3 sm:h-4 sm:w-4" />}
+                                  {amenity === "Coffee Maker" && <Coffee className="h-3 w-3 sm:h-4 sm:w-4" />}
                                   {amenity !== "Free WiFi" && amenity !== "TV" && amenity !== "Coffee Maker" && (
-                                    <CheckCircle className="h-4 w-4" />
+                                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                                   )}
-                                  <span>{amenity}</span>
+                                  <span className="hidden sm:inline">{amenity}</span>
+                                  <span className="sm:hidden">{amenity.split(' ')[0]}</span>
                                 </div>
                               ))}
                             </div>
 
                             {/* Capacity */}
-                            <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
-                              <Users className="h-4 w-4" />
+                            <div className="mt-3 sm:mt-4 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600">
+                              <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                               <span>Max {room.maxGuests} guests</span>
                             </div>
 
                             {/* Price and Book Button */}
-                            <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4">
-                              <div>
-                                <p className="text-sm text-gray-600">Price per night</p>
-                                <p className="text-3xl font-bold text-gray-900">
+                            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 border-t border-gray-100 pt-3 sm:pt-4">
+                              <div className="flex-1">
+                                <p className="text-xs sm:text-sm text-gray-600">Price per night</p>
+                                <p className="text-xl sm:text-3xl font-bold text-gray-900">
                                   ₵{room.price}
-                                  <span className="text-base font-normal text-gray-500">/night</span>
+                                  <span className="text-sm sm:text-base font-normal text-gray-500">/night</span>
                                 </p>
                                 {checkInDate && checkOutDate && (
-                                  <p className="mt-1 text-sm text-gray-500">
+                                  <p className="mt-1 text-xs sm:text-sm text-gray-500">
                                     Total: ₵{(room.price * differenceInDays(checkOutDate, checkInDate)).toFixed(2)}
                                   </p>
                                 )}
                               </div>
                               <button
                                 onClick={() => handleBookRoom(room)}
-                                className="flex items-center gap-2 rounded-2xl bg-[#01a4ff] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0084cc]"
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[#01a4ff] px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0084cc] active:bg-[#006699] touch-manipulation"
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                               >
-                                Proceed to Book
+                                <span className="hidden sm:inline">Proceed to Book</span>
+                                <span className="sm:hidden">Book Now</span>
                                 <ArrowRight className="h-4 w-4" />
                               </button>
                             </div>
