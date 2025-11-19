@@ -1,15 +1,23 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Calendar,
   ChevronDown,
   BedDouble,
   User2,
+  CheckCircle,
+  Users,
+  Wifi,
+  Coffee,
+  Tv,
+  X,
 } from "lucide-react";
 import { DateRange } from "react-date-range";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
+import Image from "next/image";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 
@@ -23,6 +31,18 @@ export interface GuestAndRoomSelection {
   adults: number;
   children: number;
   rooms: number;
+}
+
+export interface AvailableRoom {
+  id: string;
+  name: string;
+  category: RoomCategory;
+  image: string;
+  price: number;
+  available: number;
+  maxGuests: number;
+  amenities: string[];
+  description: string;
 }
 
 export interface BookingCardProps {
@@ -50,8 +70,46 @@ export function BookingCard({
   availableCategories,
   onSearch,
 }: BookingCardProps) {
+  const router = useRouter();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isGuestsOpen, setIsGuestsOpen] = useState(false);
+  const [isRoomTypeOpen, setIsRoomTypeOpen] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchResults, setSearchResults] = useState<AvailableRoom[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const cardRef = useRef<HTMLElement>(null);
+
+  // Close all dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        setIsDatePickerOpen(false);
+        setIsGuestsOpen(false);
+        setIsRoomTypeOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Close dropdowns on Escape key
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsDatePickerOpen(false);
+        setIsGuestsOpen(false);
+        setIsRoomTypeOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   const totalAdults = guestAndRoomSelection.adults;
   const totalChildren = guestAndRoomSelection.children;
@@ -81,17 +139,111 @@ export function BookingCard({
       )}`
     : "Add dates";
 
+  // Check if all required fields are filled
+  const isSearchEnabled = Boolean(
+    selectedRoomCategory && 
+    checkInDate && 
+    checkOutDate && 
+    guestAndRoomSelection.adults > 0 && 
+    guestAndRoomSelection.rooms > 0
+  );
+
+  const handleSearchClick = async () => {
+    if (isSearchEnabled) {
+      // Close all dropdowns before searching
+      setIsDatePickerOpen(false);
+      setIsGuestsOpen(false);
+      setIsRoomTypeOpen(false);
+      
+      setIsSearching(true);
+      
+      // Simulate API call to search for available rooms
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock search results based on selected category
+      const mockResults: AvailableRoom[] = [
+        {
+          id: "1",
+          name: selectedRoomCategory,
+          category: selectedRoomCategory,
+          image: "/hero.jpg",
+          price: selectedRoomCategory === "Standard Room" ? 180 : 
+                 selectedRoomCategory === "Deluxe Room" ? 260 :
+                 selectedRoomCategory === "Suite" ? 450 : 320,
+          available: 5,
+          maxGuests: selectedRoomCategory === "Family Room" ? 6 : 
+                     selectedRoomCategory === "Suite" ? 4 : 2,
+          amenities: ["Free WiFi", "TV", "Coffee Maker", "Air Conditioning"],
+          description: `Comfortable ${selectedRoomCategory.toLowerCase()} with modern amenities and stunning views.`
+        }
+      ];
+      
+      setSearchResults(mockResults);
+      setShowSearchResults(true);
+      setIsSearching(false);
+      
+      // Call the original onSearch callback
+      onSearch();
+    }
+  };
+
+  const handleBookRoom = (room: AvailableRoom) => {
+    if (!checkInDate || !checkOutDate) return;
+    
+    const nights = differenceInDays(checkOutDate, checkInDate);
+    const totalGuests = guestAndRoomSelection.adults + guestAndRoomSelection.children;
+    
+    // Build query parameters for booking page
+    const params = new URLSearchParams({
+      roomName: room.name,
+      roomImage: room.image,
+      checkIn: checkInDate.toISOString().split('T')[0],
+      checkOut: checkOutDate.toISOString().split('T')[0],
+      adults: guestAndRoomSelection.adults.toString(),
+      children: guestAndRoomSelection.children.toString(),
+      guests: totalGuests.toString(),
+      rooms: guestAndRoomSelection.rooms.toString(),
+      price: room.price.toString(),
+    });
+    
+    // Navigate to booking page
+    router.push(`/booking?${params.toString()}`);
+  };
+
   return (
     <section
+      ref={cardRef}
       aria-label="Search stays"
       className="rounded-3xl border border-black/5 bg-white p-4 text-black shadow-xl shadow-black/10 sm:p-6"
     >
       <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-start md:gap-6">
-        <Field
+        <InteractiveField
           label="Room Type"
           description={selectedRoomCategory ?? defaultRoomType}
           icon={<BedDouble className="h-4 w-4" />}
-        />
+          isOpen={isRoomTypeOpen}
+          onToggle={() => setIsRoomTypeOpen((open) => !open)}
+        >
+          <div className="space-y-2">
+            {availableCategories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => {
+                  onRoomCategoryChange(category);
+                  setIsRoomTypeOpen(false);
+                }}
+                className={`w-full rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors ${
+                  selectedRoomCategory === category
+                    ? "border-[#01a4ff] bg-[#01a4ff]/10 text-[#01a4ff]"
+                    : "border-black/10 bg-white text-black/70 hover:border-[#01a4ff]/40 hover:bg-gray-50"
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </InteractiveField>
 
         <InteractiveField
           label="Check-in and Check-out Date"
@@ -141,11 +293,25 @@ export function BookingCard({
         <div className="flex items-end md:ml-auto">
           <button
             type="button"
-            onClick={onSearch}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#01a4ff] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0084cc] md:w-auto"
+            onClick={handleSearchClick}
+            disabled={!isSearchEnabled}
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition-all md:w-auto ${
+              isSearchEnabled
+                ? "bg-[#01a4ff] text-white hover:bg-[#0084cc] hover:shadow-md"
+                : "cursor-not-allowed bg-gray-300 text-gray-500"
+            }`}
           >
-            Search
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            {isSearching ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Searching...
+              </>
+            ) : (
+              <>
+                Search
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -167,6 +333,139 @@ export function BookingCard({
           </button>
         ))}
       </div>
+
+      {/* Search Results Modal */}
+      {showSearchResults && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowSearchResults(false)}
+          />
+          
+          {/* Modal */}
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 transform">
+            <div className="mx-4 max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+              {/* Modal Header */}
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Available Rooms</h2>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {checkInDate && checkOutDate && (
+                      <>
+                        {format(checkInDate, "MMM d, yyyy")} - {format(checkOutDate, "MMM d, yyyy")} 
+                        <span className="ml-2 text-gray-400">•</span>
+                        <span className="ml-2">{differenceInDays(checkOutDate, checkInDate)} nights</span>
+                      </>
+                    )}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSearchResults(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+                  aria-label="Close"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Search Results */}
+              <div className="p-6">
+                {searchResults.length > 0 ? (
+                  <div className="space-y-4">
+                    {searchResults.map((room) => (
+                      <div
+                        key={room.id}
+                        className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow hover:shadow-lg"
+                      >
+                        <div className="flex flex-col md:flex-row">
+                          {/* Room Image */}
+                          <div className="relative h-48 w-full md:h-auto md:w-64">
+                            <Image
+                              src={room.image}
+                              alt={room.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+
+                          {/* Room Details */}
+                          <div className="flex flex-1 flex-col p-6">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="text-xl font-semibold text-gray-900">{room.name}</h3>
+                                <p className="mt-1 text-sm text-gray-600">{room.description}</p>
+                              </div>
+                              <div className="ml-4 flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+                                <CheckCircle className="h-4 w-4" />
+                                {room.available} available
+                              </div>
+                            </div>
+
+                            {/* Amenities */}
+                            <div className="mt-4 flex flex-wrap gap-3">
+                              {room.amenities.slice(0, 4).map((amenity, index) => (
+                                <div key={index} className="flex items-center gap-1.5 text-sm text-gray-600">
+                                  {amenity === "Free WiFi" && <Wifi className="h-4 w-4" />}
+                                  {amenity === "TV" && <Tv className="h-4 w-4" />}
+                                  {amenity === "Coffee Maker" && <Coffee className="h-4 w-4" />}
+                                  {amenity !== "Free WiFi" && amenity !== "TV" && amenity !== "Coffee Maker" && (
+                                    <CheckCircle className="h-4 w-4" />
+                                  )}
+                                  <span>{amenity}</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Capacity */}
+                            <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
+                              <Users className="h-4 w-4" />
+                              <span>Max {room.maxGuests} guests</span>
+                            </div>
+
+                            {/* Price and Book Button */}
+                            <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4">
+                              <div>
+                                <p className="text-sm text-gray-600">Price per night</p>
+                                <p className="text-3xl font-bold text-gray-900">
+                                  ₵{room.price}
+                                  <span className="text-base font-normal text-gray-500">/night</span>
+                                </p>
+                                {checkInDate && checkOutDate && (
+                                  <p className="mt-1 text-sm text-gray-500">
+                                    Total: ₵{(room.price * differenceInDays(checkOutDate, checkInDate)).toFixed(2)}
+                                  </p>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => handleBookRoom(room)}
+                                className="flex items-center gap-2 rounded-2xl bg-[#01a4ff] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0084cc]"
+                              >
+                                Proceed to Book
+                                <ArrowRight className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center">
+                    <p className="text-lg text-gray-600">No rooms available for your selected dates.</p>
+                    <button
+                      onClick={() => setShowSearchResults(false)}
+                      className="mt-4 text-sm font-medium text-[#01a4ff] hover:text-[#0084cc]"
+                    >
+                      Try different dates
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }

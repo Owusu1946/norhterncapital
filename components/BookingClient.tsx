@@ -328,52 +328,63 @@ export function BookingClient() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-8">
+      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 sm:mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center text-sm sm:text-base text-gray-600 hover:text-gray-900 mb-4"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Room Details
+            <span className="hidden sm:inline">Back to Room Details</span>
+            <span className="sm:hidden">Back</span>
           </button>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Booking</h1>
-          <p className="text-gray-600">Secure your stay at Northern Capital Hotel</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Complete Your Booking</h1>
+          <p className="text-sm sm:text-base text-gray-600">Secure your stay at Northern Capital Hotel</p>
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-8">
+        <div className="mb-6 sm:mb-8 overflow-x-auto">
+          <div className="flex items-center justify-center min-w-max px-4 sm:px-0">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  currentStep >= step ? "bg-[#01a4ff] text-white" : "bg-gray-200 text-gray-600"
-                }`}>
-                  {step}
+                <div className="flex flex-col items-center">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all ${
+                    currentStep >= step 
+                      ? "bg-[#01a4ff] text-white shadow-lg shadow-[#01a4ff]/30" 
+                      : "bg-gray-100 text-gray-400 border-2 border-gray-200"
+                  }`}>
+                    {step}
+                  </div>
+                  <span className={`mt-2 text-xs sm:text-sm font-medium whitespace-nowrap ${
+                    currentStep >= step ? "text-[#01a4ff]" : "text-gray-400"
+                  }`}>
+                    {step === 1 ? "Room" : step === 2 ? "Details" : "Payment"}
+                  </span>
                 </div>
-                <span className={`ml-2 text-sm ${currentStep >= step ? "text-[#01a4ff]" : "text-gray-600"}`}>
-                  {step === 1 ? "Room & Services" : step === 2 ? "Guest Details" : "Payment"}
-                </span>
-                {step < 3 && <div className="w-16 h-0.5 bg-gray-200 ml-4" />}
+                {step < 3 && (
+                  <div className={`w-12 sm:w-20 h-1 mx-2 sm:mx-4 rounded-full transition-all ${
+                    currentStep > step ? "bg-[#01a4ff]" : "bg-gray-200"
+                  }`} />
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-          <div className="space-y-8">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_400px]">
+          <div className="space-y-6 sm:space-y-8">
             {/* Step 1: Room Summary & Additional Services */}
             {currentStep === 1 && (
               <>
                 {/* Room Summary */}
-                <div className="bg-white rounded-3xl p-6 shadow-sm">
-                  <h2 className="text-xl font-semibold mb-4">Your Room Selection</h2>
-                  <div className="flex items-start space-x-4">
-                    <div className="w-24 h-24 bg-gray-200 rounded-2xl overflow-hidden">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4">Your Room Selection</h2>
+                  <div className="flex items-start space-x-3 sm:space-x-4">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-200 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0">
                       <Image 
                         src={bookingData.roomImage || "/hero.jpg"} 
                         alt={bookingData.roomName || "Room"} 
@@ -406,35 +417,35 @@ export function BookingClient() {
                 </div>
 
                 {/* Additional Services */}
-                <div className="bg-white rounded-3xl p-6 shadow-sm">
-                  <h2 className="text-xl font-semibold mb-4">Enhance Your Stay</h2>
-                  <p className="text-gray-600 mb-6">Select additional services to make your experience unforgettable</p>
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Enhance Your Stay</h2>
+                  <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Select additional services to make your experience unforgettable</p>
                   
                   {["transport", "spa", "dining", "activities"].map((category) => (
-                    <div key={category} className="mb-6">
-                      <h3 className="font-semibold text-lg mb-3 capitalize text-gray-800">
+                    <div key={category} className="mb-4 sm:mb-6">
+                      <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 capitalize text-gray-800">
                         {category === "transport" ? "Transportation" : category}
                       </h3>
-                      <div className="grid gap-3 md:grid-cols-2">
+                      <div className="grid gap-2 sm:gap-3 md:grid-cols-2">
                         {additionalServices
                           .filter(service => service.category === category)
                           .map((service) => (
                             <div
                               key={service.id}
-                              className={`border rounded-2xl p-4 cursor-pointer transition-all ${
+                              className={`border rounded-xl sm:rounded-2xl p-3 sm:p-4 cursor-pointer transition-all ${
                                 selectedServices.includes(service.id)
                                   ? "border-[#01a4ff] bg-[#01a4ff]/5"
                                   : "border-gray-200 hover:border-gray-300"
                               }`}
                               onClick={() => handleServiceToggle(service.id)}
                             >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold text-gray-900">{service.name}</h4>
-                                  <p className="text-sm text-gray-600 mt-1">{service.description}</p>
-                                  <p className="font-semibold text-[#01a4ff] mt-2">₵{service.price.toLocaleString()}</p>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-sm sm:text-base text-gray-900">{service.name}</h4>
+                                  <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{service.description}</p>
+                                  <p className="font-semibold text-sm sm:text-base text-[#01a4ff] mt-2">₵{service.price.toLocaleString()}</p>
                                 </div>
-                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                                <div className={`w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center ${
                                   selectedServices.includes(service.id)
                                     ? "border-[#01a4ff] bg-[#01a4ff]"
                                     : "border-gray-300"
@@ -457,16 +468,16 @@ export function BookingClient() {
 
             {/* Step 2: Guest Details */}
             {currentStep === 2 && (
-              <div className="bg-white rounded-3xl p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">Guest Information</h2>
-                <div className="grid gap-4 md:grid-cols-2">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Guest Information</h2>
+                <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">First Name *</label>
                     <input
                       type="text"
                       value={guestDetails.firstName}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                       required
                     />
                   </div>
@@ -476,7 +487,7 @@ export function BookingClient() {
                       type="text"
                       value={guestDetails.lastName}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                       required
                     />
                   </div>
@@ -486,7 +497,7 @@ export function BookingClient() {
                       type="email"
                       value={guestDetails.email}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                       required
                     />
                   </div>
@@ -496,7 +507,7 @@ export function BookingClient() {
                       type="tel"
                       value={guestDetails.phone}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                       required
                     />
                   </div>
@@ -505,7 +516,7 @@ export function BookingClient() {
                     <select
                       value={guestDetails.country}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, country: e.target.value }))}
-                      className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                       required
                     >
                       <option value="">Select Country</option>
@@ -525,7 +536,7 @@ export function BookingClient() {
                       value={guestDetails.specialRequests}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, specialRequests: e.target.value }))}
                       rows={3}
-                      className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                       placeholder="Any special requirements or preferences..."
                     />
                   </div>
@@ -535,7 +546,7 @@ export function BookingClient() {
 
             {/* Step 3: Payment */}
             {currentStep === 3 && (
-              <div className="bg-white rounded-3xl p-6 shadow-sm">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
                 
                 <div className="mb-6">
@@ -571,7 +582,7 @@ export function BookingClient() {
                         value={cardDetails.number}
                         onChange={(e) => setCardDetails(prev => ({ ...prev, number: e.target.value }))}
                         placeholder="1234 5678 9012 3456"
-                        className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                         required
                       />
                     </div>
@@ -582,7 +593,7 @@ export function BookingClient() {
                         value={cardDetails.expiry}
                         onChange={(e) => setCardDetails(prev => ({ ...prev, expiry: e.target.value }))}
                         placeholder="MM/YY"
-                        className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                         required
                       />
                     </div>
@@ -593,7 +604,7 @@ export function BookingClient() {
                         value={cardDetails.cvv}
                         onChange={(e) => setCardDetails(prev => ({ ...prev, cvv: e.target.value }))}
                         placeholder="123"
-                        className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                         required
                       />
                     </div>
@@ -603,7 +614,7 @@ export function BookingClient() {
                         type="text"
                         value={cardDetails.name}
                         onChange={(e) => setCardDetails(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:border-[#01a4ff] focus:outline-none"
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
                         required
                       />
                     </div>
@@ -641,10 +652,10 @@ export function BookingClient() {
 
           {/* Booking Summary Sidebar */}
           <div className="lg:sticky lg:top-8">
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
-              <h3 className="font-semibold text-lg mb-4">Booking Summary</h3>
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+              <h3 className="font-semibold text-base sm:text-lg mb-4">Booking Summary</h3>
               
-              <div className="space-y-3 text-sm">
+              <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Room ({calculateNights()} nights)</span>
                   <span>₵{((bookingData.pricePerNight || 0) * calculateNights() * (bookingData.rooms || 1)).toLocaleString()}</span>
@@ -667,21 +678,22 @@ export function BookingClient() {
                   </>
                 )}
                 
-                <div className="border-t pt-3">
-                  <div className="flex justify-between font-semibold text-lg">
+                <div className="border-t pt-2 sm:pt-3">
+                  <div className="flex justify-between font-semibold text-base sm:text-lg">
                     <span>Total</span>
                     <span className="text-[#01a4ff]">₵{calculateTotal().toLocaleString()}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 space-y-3">
+              <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
                 {currentStep < 3 && (
                   <button
                     onClick={() => handleStepNavigation(currentStep + 1)}
-                    className="w-full bg-[#01a4ff] text-white py-3 rounded-2xl font-semibold hover:bg-[#0084cc] transition-colors"
+                    className="w-full bg-[#01a4ff] text-white py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#0084cc] transition-colors"
                   >
-                    {currentStep === 1 ? "Continue to Guest Details" : "Continue to Payment"}
+                    <span className="hidden sm:inline">{currentStep === 1 ? "Continue to Guest Details" : "Continue to Payment"}</span>
+                    <span className="sm:hidden">{currentStep === 1 ? "Next: Guest Details" : "Next: Payment"}</span>
                   </button>
                 )}
                 
@@ -689,7 +701,7 @@ export function BookingClient() {
                   <button
                     onClick={handlePayment}
                     disabled={isProcessing}
-                    className="w-full bg-[#01a4ff] text-white py-3 rounded-2xl font-semibold hover:bg-[#0084cc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#01a4ff] text-white py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#0084cc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isProcessing ? "Processing..." : `Pay ₵${calculateTotal().toLocaleString()}`}
                   </button>
@@ -698,16 +710,16 @@ export function BookingClient() {
                 {currentStep > 1 && (
                   <button
                     onClick={() => setCurrentStep(prev => prev - 1)}
-                    className="w-full border border-gray-300 text-gray-700 py-3 rounded-2xl font-semibold hover:bg-gray-50 transition-colors"
+                    className="w-full border border-gray-300 text-gray-700 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-gray-50 transition-colors"
                   >
                     Back
                   </button>
                 )}
               </div>
               
-              <div className="mt-4 text-xs text-gray-500 text-center">
+              <div className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-gray-500 text-center space-y-1">
                 <p>🔒 Secure payment powered by SSL encryption</p>
-                <p className="mt-1">Free cancellation up to 24 hours before check-in</p>
+                <p>Free cancellation up to 24 hours before check-in</p>
               </div>
             </div>
           </div>
