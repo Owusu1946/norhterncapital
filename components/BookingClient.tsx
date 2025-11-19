@@ -189,6 +189,13 @@ export function BookingClient() {
       setShowAuthModal(true);
       return;
     }
+    
+    // Scroll to top for better UX
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    
     setCurrentStep(nextStep);
   };
 
@@ -274,51 +281,67 @@ export function BookingClient() {
 
   if (bookingComplete) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="mx-auto max-w-2xl px-4">
-          <div className="rounded-3xl bg-white p-8 shadow-lg text-center">
-            <div className="mb-6">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-gray-50 py-6 sm:py-12">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6">
+          <div className="rounded-2xl sm:rounded-3xl bg-white p-6 sm:p-8 shadow-lg text-center">
+            {/* Success Icon */}
+            <div className="mb-6 sm:mb-8">
+              <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-bounce">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h1>
-              <p className="text-gray-600">Your reservation at Northern Capital Hotel has been successfully processed.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h1>
+              <p className="text-sm sm:text-base text-gray-600 px-4">Your reservation at Northern Capital Hotel has been successfully processed.</p>
             </div>
             
-            <div className="bg-gray-50 rounded-2xl p-6 mb-6 text-left">
-              <h3 className="font-semibold text-gray-900 mb-4">Booking Details</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+            {/* Booking Details Card */}
+            <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 text-left">
+              <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-3 sm:mb-4">Booking Details</h3>
+              <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                <div className="flex justify-between gap-2">
                   <span className="text-gray-600">Room:</span>
-                  <span className="font-medium">{bookingData.roomName}</span>
+                  <span className="font-medium text-right">{bookingData.roomName}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-gray-600">Check-in:</span>
-                  <span className="font-medium">{bookingData.checkIn && formatDate(bookingData.checkIn)}</span>
+                  <span className="font-medium text-right">{bookingData.checkIn && formatDate(bookingData.checkIn)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-gray-600">Check-out:</span>
-                  <span className="font-medium">{bookingData.checkOut && formatDate(bookingData.checkOut)}</span>
+                  <span className="font-medium text-right">{bookingData.checkOut && formatDate(bookingData.checkOut)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Amount:</span>
-                  <span className="font-bold text-[#01a4ff]">₵{calculateTotal().toLocaleString()}</span>
+                <div className="flex justify-between gap-2 pt-2 border-t border-gray-200">
+                  <span className="text-gray-600 font-semibold">Total Amount:</span>
+                  <span className="font-bold text-base sm:text-lg text-[#01a4ff]">₵{calculateTotal().toLocaleString()}</span>
                 </div>
               </div>
             </div>
             
-            <p className="text-sm text-gray-600 mb-6">
-              A confirmation email has been sent to {guestDetails.email}. Our team will contact you within 24 hours to finalize your reservation.
-            </p>
+            {/* Confirmation Message */}
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+              <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                📧 A confirmation email has been sent to <span className="font-semibold text-[#01a4ff]">{guestDetails.email}</span>. Our team will contact you within 24 hours to finalize your reservation.
+              </p>
+            </div>
             
-            <button
-              onClick={() => router.push("/")}
-              className="bg-[#01a4ff] text-white px-8 py-3 rounded-2xl font-semibold hover:bg-[#0084cc] transition-colors"
-            >
-              Return to Home
-            </button>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <button
+                onClick={() => router.push("/")}
+                className="flex-1 bg-[#01a4ff] text-white px-6 sm:px-8 py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#0084cc] active:bg-[#006699] transition-colors touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                Return to Home
+              </button>
+              <button
+                onClick={() => router.push("/bookings")}
+                className="flex-1 border-2 border-[#01a4ff] text-[#01a4ff] px-6 sm:px-8 py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#01a4ff]/5 active:bg-[#01a4ff]/10 transition-colors touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                View My Bookings
+              </button>
+            </div>
           </div>
         </div>
       </div>

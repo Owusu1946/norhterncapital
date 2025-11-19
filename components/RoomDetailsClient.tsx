@@ -98,15 +98,25 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
     setBookingMessage(null);
   }
 
-  function handleBookClick() {
+  function handleBookClick(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Validate dates before booking
+    if (!bookingData.checkIn || !bookingData.checkOut) {
+      setStatusMessage("Please select your check-in and check-out dates first.");
+      setCanBook(false);
+      return;
+    }
+    
     // Navigate to booking page with all necessary data
     const totalGuests = bookingData.adults + bookingData.children;
     const params = new URLSearchParams({
       roomSlug: room.slug,
       roomName: room.name,
       roomImage: room.image,
-      checkIn: bookingData.checkIn || '',
-      checkOut: bookingData.checkOut || '',
+      checkIn: bookingData.checkIn,
+      checkOut: bookingData.checkOut,
       adults: bookingData.adults.toString(),
       children: bookingData.children.toString(),
       guests: totalGuests.toString(),
@@ -114,7 +124,9 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
       price: room.priceFrom.toString()
     });
     
-    router.push(`/booking?${params.toString()}`);
+    // Use window.location for better iOS Safari compatibility
+    const url = `/booking?${params.toString()}`;
+    router.push(url);
   }
 
   return (
@@ -310,7 +322,8 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
 
             <button
               type="submit"
-              className="mt-2 inline-flex w-full items-center justify-center rounded-2xl bg-[#01a4ff] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0084cc]"
+              className="mt-2 inline-flex w-full items-center justify-center rounded-2xl bg-[#01a4ff] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#0084cc] active:bg-[#006699] transition-colors touch-manipulation"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               Check availability
             </button>
@@ -330,7 +343,8 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
               <button
                 type="button"
                 onClick={handleBookClick}
-                className="mt-2 inline-flex w-full items-center justify-center rounded-2xl border border-[#01a4ff]/60 bg-white px-4 py-2.5 text-sm font-semibold text-[#01a4ff] shadow-sm hover:bg-[#01a4ff]/5"
+                className="mt-2 inline-flex w-full items-center justify-center rounded-2xl border border-[#01a4ff]/60 bg-white px-4 py-2.5 text-sm font-semibold text-[#01a4ff] shadow-sm hover:bg-[#01a4ff]/5 active:bg-[#01a4ff]/10 transition-colors touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 Book this room
               </button>
