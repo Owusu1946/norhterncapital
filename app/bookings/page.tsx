@@ -145,6 +145,88 @@ export default function BookingsPage() {
     onAfterPrint: () => setSelectedBookingForReceipt(null),
   });
 
+  // Detect if user is on mobile
+  const isMobile = () => {
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  };
+
+  const handleDownloadReceipt = (booking: Booking) => {
+    if (isMobile()) {
+      // For mobile, open receipt in a new window that can be saved as PDF
+      setSelectedBookingForReceipt(booking);
+      setTimeout(() => {
+        if (receiptRef.current) {
+          const receiptContent = receiptRef.current.innerHTML;
+          const printWindow = window.open('', '_blank');
+          if (printWindow) {
+            printWindow.document.write(`
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Receipt - ${booking.bookingReference}</title>
+                  <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { 
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      padding: 20px;
+                      background: #f9fafb;
+                    }
+                    @media print {
+                      body { background: white; }
+                    }
+                  </style>
+                </head>
+                <body>
+                  ${receiptContent}
+                  <div style="margin-top: 30px; text-align: center;">
+                    <button 
+                      onclick="window.print()" 
+                      style="
+                        background: #01a4ff;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin-right: 10px;
+                      "
+                    >
+                      Print / Save as PDF
+                    </button>
+                    <button 
+                      onclick="window.close()" 
+                      style="
+                        background: #6b7280;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                      "
+                    >
+                      Close
+                    </button>
+                  </div>
+                </body>
+              </html>
+            `);
+            printWindow.document.close();
+          }
+        }
+        setSelectedBookingForReceipt(null);
+      }, 100);
+    } else {
+      // For desktop, use react-to-print
+      setSelectedBookingForReceipt(booking);
+    }
+  };
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/auth");
@@ -159,7 +241,7 @@ export default function BookingsPage() {
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (selectedBookingForReceipt && receiptRef.current) {
+    if (selectedBookingForReceipt && receiptRef.current && !isMobile()) {
       handlePrint();
     }
   }, [selectedBookingForReceipt, handlePrint]);
@@ -572,39 +654,47 @@ export default function BookingsPage() {
 
                             <div className="flex flex-wrap gap-2">
                               <button 
-                                onClick={() => setSelectedBookingForReceipt(booking)}
-                                className="flex items-center gap-2 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50"
+                                onClick={() => handleDownloadReceipt(booking)}
+                                className="flex items-center gap-2 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
+                                style={{ WebkitTapHighlightColor: 'transparent' }}
                               >
                                 <Download className="h-4 w-4" />
-                                Download Receipt
+                                <span className="hidden sm:inline">Download Receipt</span>
+                                <span className="sm:hidden">Receipt</span>
                               </button>
                               {booking.status === "confirmed" && (
                                 <>
                                   <button 
                                     onClick={() => handleContactHotel(booking)}
-                                    className="flex items-center gap-2 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50"
+                                    className="flex items-center gap-2 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
+                                    style={{ WebkitTapHighlightColor: 'transparent' }}
                                   >
                                     <Mail className="h-4 w-4" />
-                                    Contact Hotel
+                                    <span className="hidden sm:inline">Contact Hotel</span>
+                                    <span className="sm:hidden">Contact</span>
                                   </button>
                                   <button 
                                     onClick={() => {
                                       setBookingToCancel(booking);
                                       setShowCancelModal(true);
                                     }}
-                                    className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
+                                    className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 active:bg-red-200 touch-manipulation"
+                                    style={{ WebkitTapHighlightColor: 'transparent' }}
                                   >
-                                    Cancel Booking
+                                    <span className="hidden sm:inline">Cancel Booking</span>
+                                    <span className="sm:hidden">Cancel</span>
                                   </button>
                                 </>
                               )}
                               {(booking.status === "completed" || booking.status === "cancelled") && activeTab === "past" && (
                                 <button 
                                   onClick={() => handleRebook(booking)}
-                                  className="flex items-center gap-2 rounded-2xl border border-[#01a4ff] bg-[#01a4ff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0084cc]"
+                                  className="flex items-center gap-2 rounded-2xl border border-[#01a4ff] bg-[#01a4ff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0084cc] active:bg-[#006699] touch-manipulation"
+                                  style={{ WebkitTapHighlightColor: 'transparent' }}
                                 >
                                   <RefreshCw className="h-4 w-4" />
-                                  Book Again
+                                  <span className="hidden sm:inline">Book Again</span>
+                                  <span className="sm:hidden">Rebook</span>
                                 </button>
                               )}
                             </div>
