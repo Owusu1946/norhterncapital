@@ -67,20 +67,27 @@ export async function GET(request: NextRequest) {
     console.log("📦 Fetched", bookings.length, "payments");
 
     // Format payments
-    const payments = bookings.map((booking) => ({
-      id: booking._id.toString(),
-      date: booking.createdAt,
-      guestName: `${booking.guestFirstName} ${booking.guestLastName}`,
-      guestEmail: booking.guestEmail,
-      roomName: booking.roomName,
-      paymentMethod: booking.paymentMethod || "cash",
-      paymentStatus: booking.paymentStatus || "pending",
-      amount: booking.totalAmount,
-      transactionReference: booking.transactionReference || `NCH-${booking._id.toString().slice(-8).toUpperCase()}`,
-      bookingReference: `NCH-${booking._id.toString().slice(-8).toUpperCase()}`,
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-    }));
+    const payments = bookings.map((booking) => {
+      // Some older bookings may store a transaction reference separately; it's not part of the Booking TS type
+      const transactionReference = (booking as any).transactionReference as string | undefined;
+
+      const fallbackRef = `NCH-${booking._id.toString().slice(-8).toUpperCase()}`;
+
+      return {
+        id: booking._id.toString(),
+        date: booking.createdAt,
+        guestName: `${booking.guestFirstName} ${booking.guestLastName}`,
+        guestEmail: booking.guestEmail,
+        roomName: booking.roomName,
+        paymentMethod: booking.paymentMethod || "cash",
+        paymentStatus: booking.paymentStatus || "pending",
+        amount: booking.totalAmount,
+        transactionReference: transactionReference || fallbackRef,
+        bookingReference: fallbackRef,
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+      };
+    });
 
     console.log("✅ Returning", payments.length, "formatted payments");
     

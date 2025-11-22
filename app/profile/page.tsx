@@ -522,7 +522,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-medium text-black">Account Type</p>
                     <p className="mt-1 text-xs text-black/60">Your membership level</p>
                   </div>
-                  <span className="text-sm font-medium text-black capitalize">{user?.role || "Guest"}</span>
+                  <span className="text-sm font-medium text-black capitalize">{(user as any)?.role || "Guest"}</span>
                 </div>
               </div>
             </div>
