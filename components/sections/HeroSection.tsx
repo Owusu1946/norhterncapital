@@ -31,15 +31,17 @@ interface HeroSectionProps {
   defaultRoomType?: string;
 }
 
-export function HeroSection({
-  defaultRoomType = "Select room type",
-}: HeroSectionProps) {
+export function HeroSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
   const [selectedRoomCategory, setSelectedRoomCategory] =
-    useState<RoomCategory>("Standard Room");
+    useState<RoomCategory>('');
   const [guestAndRoomSelection, setGuestAndRoomSelection] =
-    useState<GuestAndRoomSelection>({ adults: 2, children: 0, rooms: 1 });
+    useState<GuestAndRoomSelection>({ adults: 1, children: 0, rooms: 1 });
   const [checkInDate, setCheckInDate] = useState<Date | null>(null);
   const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<RoomCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const defaultRoomType = "Select room type";
 
   function handleSearch() {
     // TODO: Integrate with search results page or API.
@@ -55,6 +57,33 @@ export function HeroSection({
 
     console.log("Searching stays with:", searchPayload);
   }
+
+  useEffect(() => {
+    async function fetchRoomTypes() {
+      setIsLoadingCategories(true);
+      try {
+        const response = await fetch('/api/public/room-types');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.roomTypes) {
+            const categories = data.data.roomTypes.map((rt: any) => rt.name);
+            setAvailableCategories(categories);
+            // Set first category as default if available
+            if (categories.length > 0 && !selectedRoomCategory) {
+              setSelectedRoomCategory(categories[0]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching room types:', error);
+        // Fallback to default categories if API fails
+        setAvailableCategories(["Standard Room", "Deluxe Room", "Suite", "Family Room"]);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    }
+    fetchRoomTypes();
+  }, []);
 
   return (
     <section className="relative min-h-screen bg-neutral-900 text-white">
@@ -74,6 +103,8 @@ export function HeroSection({
             setCheckOutDate(checkOut);
           }}
           onSearch={handleSearch}
+          availableCategories={availableCategories}
+          isLoadingCategories={isLoadingCategories}
         />
       </div>
     </section>
@@ -180,6 +211,8 @@ interface HeroContentProps {
   checkOutDate: Date | null;
   onDatesChange: (dates: { checkIn: Date | null; checkOut: Date | null }) => void;
   onSearch: () => void;
+  availableCategories: RoomCategory[];
+  isLoadingCategories: boolean;
 }
 
 function HeroContent({
@@ -192,6 +225,8 @@ function HeroContent({
   checkOutDate,
   onDatesChange,
   onSearch,
+  availableCategories,
+  isLoadingCategories,
 }: HeroContentProps) {
   return (
     <main className="flex flex-1 flex-col justify-end px-6 pb-10 sm:px-10 sm:pb-14">
@@ -214,12 +249,7 @@ function HeroContent({
           checkInDate={checkInDate}
           checkOutDate={checkOutDate}
           onDatesChange={onDatesChange}
-          availableCategories={[
-            "Standard Room",
-            "Deluxe Room",
-            "Suite",
-            "Family Room",
-          ]}
+          availableCategories={availableCategories}
           onSearch={onSearch}
         />
       </section>

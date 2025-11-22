@@ -31,101 +31,37 @@ interface Booking {
   guests: number;
   rooms: number;
   totalAmount: number;
-  status: "confirmed" | "cancelled" | "completed";
-  paymentStatus: "paid" | "pending" | "refunded";
+  status: "confirmed" | "cancelled" | "completed" | "pending";
+  paymentStatus: "paid" | "pending" | "refunded" | "failed";
   createdAt: string;
   services?: string[];
   checkInStatus: "not-checked-in" | "checked-in" | "checked-out";
   actualCheckInTime?: string;
   actualCheckOutTime?: string;
+  nights?: number;
+  adults?: number;
+  children?: number;
 }
 
-// Mock data - Replace with actual API call
-const mockBookings: Booking[] = [
-  {
-    id: "1",
-    bookingReference: "NCH-2024-001",
-    roomName: "Deluxe Room",
-    roomImage: "/hero.jpg",
-    checkIn: "2025-11-25",
-    checkOut: "2025-11-28",
-    guests: 2,
-    rooms: 1,
-    totalAmount: 780,
-    status: "confirmed",
-    paymentStatus: "paid",
-    createdAt: "2024-11-15",
-    services: ["Airport Pickup", "Breakfast"],
-    checkInStatus: "not-checked-in"
-  },
-  {
-    id: "2",
-    bookingReference: "NCH-2024-002",
-    roomName: "Family Room",
-    roomImage: "/hero.jpg",
-    checkIn: "2025-12-20",
-    checkOut: "2025-12-25",
-    guests: 4,
-    rooms: 1,
-    totalAmount: 1300,
-    status: "confirmed",
-    paymentStatus: "paid",
-    createdAt: "2024-11-10",
-    services: ["Spa Package", "Dinner Package"],
-    checkInStatus: "not-checked-in"
-  },
-  {
-    id: "5",
-    bookingReference: "NCH-2024-005",
-    roomName: "Executive Suite",
-    roomImage: "/hero.jpg",
-    checkIn: "2024-11-18",
-    checkOut: "2024-11-22",
-    guests: 2,
-    rooms: 1,
-    totalAmount: 950,
-    status: "confirmed",
-    paymentStatus: "paid",
-    createdAt: "2024-11-05",
-    services: ["Airport Pickup", "Spa Package"],
-    checkInStatus: "checked-in",
-    actualCheckInTime: "2024-11-18T15:45:00"
-  },
-  {
-    id: "3",
-    bookingReference: "NCH-2024-003",
-    roomName: "Standard Room",
-    roomImage: "/hero.jpg",
-    checkIn: "2024-10-15",
-    checkOut: "2024-10-18",
-    guests: 2,
-    rooms: 1,
-    totalAmount: 520,
-    status: "completed",
-    paymentStatus: "paid",
-    createdAt: "2024-10-01",
-    checkInStatus: "checked-out",
-    actualCheckInTime: "2024-10-15T15:30:00",
-    actualCheckOutTime: "2024-10-18T11:45:00"
-  },
-  {
-    id: "4",
-    bookingReference: "NCH-2024-004",
-    roomName: "Suite",
-    roomImage: "/hero.jpg",
-    checkIn: "2024-09-05",
-    checkOut: "2024-09-08",
-    guests: 2,
-    rooms: 1,
-    totalAmount: 1200,
-    status: "completed",
-    paymentStatus: "paid",
-    createdAt: "2024-08-20",
-    checkInStatus: "checked-out",
-    actualCheckInTime: "2024-09-05T14:15:00",
-    actualCheckOutTime: "2024-09-08T10:30:00"
-  }
-];
+// Helper function to map API booking status to UI status
+const mapBookingStatus = (bookingStatus: string, checkOutDate: string): Booking["status"] => {
+  const checkOut = new Date(checkOutDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (bookingStatus === "cancelled") return "cancelled";
+  if (bookingStatus === "checked_out") return "completed";
+  if (checkOut < today && bookingStatus !== "pending" && bookingStatus !== "confirmed") return "completed";
+  // Pending and confirmed bookings are shown as confirmed in UI
+  return "confirmed";
+};
+
+// Helper function to map booking status to check-in status
+const mapCheckInStatus = (bookingStatus: string): Booking["checkInStatus"] => {
+  if (bookingStatus === "checked_in") return "checked-in";
+  if (bookingStatus === "checked_out") return "checked-out";
+  return "not-checked-in";
+};
 
 export default function BookingsPage() {
   const router = useRouter();
@@ -227,17 +163,62 @@ export default function BookingsPage() {
     }
   };
 
+  // Fetch bookings from API
+  const fetchBookings = async () => {
+    setIsLoadingBookings(true);
+    try {
+      const response = await fetch('/api/bookings/my-bookings', {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Map API bookings to UI format
+          const mappedBookings: Booking[] = data.data.bookings.map((b: any) => ({
+            id: b.id,
+            bookingReference: b.bookingReference,
+            roomName: b.roomName,
+            roomImage: b.roomImage || '/hero.jpg',
+            checkIn: b.checkIn.split('T')[0], // Format date
+            checkOut: b.checkOut.split('T')[0],
+            guests: b.totalGuests || b.adults || 1,
+            rooms: b.numberOfRooms || 1,
+            totalAmount: b.totalAmount,
+            status: mapBookingStatus(b.bookingStatus, b.checkOut),
+            paymentStatus: b.paymentStatus,
+            createdAt: b.createdAt.split('T')[0],
+            services: b.additionalServices?.map((s: any) => s.name) || [],
+            checkInStatus: mapCheckInStatus(b.bookingStatus),
+            nights: b.nights,
+            adults: b.adults,
+            children: b.children,
+          }));
+          
+          setBookings(mappedBookings);
+          console.log('✅ Loaded', mappedBookings.length, 'bookings from database');
+        }
+      } else {
+        console.error('Failed to fetch bookings');
+        setBookings([]);
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      setBookings([]);
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/auth");
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      setBookings(mockBookings);
-      setIsLoadingBookings(false);
-    }, 1000);
+    if (isAuthenticated) {
+      fetchBookings();
+    }
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
@@ -247,14 +228,17 @@ export default function BookingsPage() {
   }, [selectedBookingForReceipt, handlePrint]);
 
   const upcomingBookings = bookings.filter(booking => {
-    const checkInDate = new Date(booking.checkIn);
+    const checkOutDate = new Date(booking.checkOut);
     const today = new Date();
-    return checkInDate >= today && booking.status === "confirmed";
+    today.setHours(0, 0, 0, 0);
+    // Show if checkout is in the future and status is confirmed (includes pending)
+    return checkOutDate >= today && booking.status === "confirmed";
   });
 
   const pastBookings = bookings.filter(booking => {
     const checkOutDate = new Date(booking.checkOut);
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return checkOutDate < today || booking.status === "completed" || booking.status === "cancelled";
   });
 

@@ -143,7 +143,7 @@ export function UserAccount({ variant = "default" }: UserAccountProps) {
                 <button
                   onClick={() => {
                     setShowDropdown(false);
-                    // Navigate to profile page
+                    router.push("/profile");
                   }}
                   className="w-full text-left px-4 py-4 text-base text-gray-700 hover:bg-gray-50 active:bg-gray-100 flex items-center rounded-xl transition-colors touch-manipulation"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -201,7 +201,7 @@ export function UserAccount({ variant = "default" }: UserAccountProps) {
             <button
               onClick={() => {
                 setShowDropdown(false);
-                // Navigate to profile page
+                router.push("/profile");
               }}
               className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 flex items-center transition-colors touch-manipulation"
               style={{ WebkitTapHighlightColor: 'transparent' }}

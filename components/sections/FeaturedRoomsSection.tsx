@@ -2,10 +2,50 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
-import { rooms } from "../../lib/rooms";
+import { useState, useEffect } from "react";
+import { Room } from "../../lib/rooms";
 
 export function FeaturedRoomsSection() {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRoomTypes();
+  }, []);
+
+  const fetchRoomTypes = async () => {
+    try {
+      const response = await fetch("/api/public/room-types");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data.roomTypes) {
+          // Take first 3 room types for featured section
+          setRooms(data.data.roomTypes.slice(0, 3));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching room types:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="bg-white px-6 py-12 text-black sm:px-10 sm:py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex justify-center items-center py-12">
+            <div className="text-sm text-gray-600">Loading rooms...</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (rooms.length === 0) {
+    return null; // Don't show section if no rooms
+  }
+
   return (
     <section className="bg-white px-6 py-12 text-black sm:px-10 sm:py-16">
       <div className="mx-auto max-w-6xl">

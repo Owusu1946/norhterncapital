@@ -1,4 +1,4 @@
-import { FeaturedRoomsSection } from "../../components/sections/FeaturedRoomsSection";
+import { AllRoomsSection } from "../../components/sections/AllRoomsSection";
 import { Header } from "../../components/sections/Header";
 
 export default function RoomsPage() {
@@ -21,7 +21,7 @@ export default function RoomsPage() {
           </p>
         </header>
 
-        <FeaturedRoomsSection />
+        <AllRoomsSection />
       </div>
       </main>
     </>

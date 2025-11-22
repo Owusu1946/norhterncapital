@@ -21,72 +21,13 @@ interface BookingData {
   pricePerNight?: number;
 }
 
-interface AdditionalService {
-  id: string;
+interface Service {
+  _id: string;
   name: string;
   description: string;
   price: number;
-  category: "transport" | "spa" | "dining" | "activities";
+  category: "transport" | "spa" | "dining" | "activities" | "other";
 }
-
-const additionalServices: AdditionalService[] = [
-  {
-    id: "airport-pickup",
-    name: "Airport Pickup",
-    description: "Luxury vehicle pickup from Kotoka International Airport",
-    price: 150,
-    category: "transport"
-  },
-  {
-    id: "airport-dropoff",
-    name: "Airport Drop-off",
-    description: "Comfortable ride to Kotoka International Airport",
-    price: 120,
-    category: "transport"
-  },
-  {
-    id: "spa-package",
-    name: "Spa Wellness Package",
-    description: "Full body massage, facial treatment, and access to wellness center",
-    price: 300,
-    category: "spa"
-  },
-  {
-    id: "couples-spa",
-    name: "Couples Spa Experience",
-    description: "Romantic spa session for two with champagne service",
-    price: 550,
-    category: "spa"
-  },
-  {
-    id: "breakfast-upgrade",
-    name: "Premium Breakfast",
-    description: "Continental breakfast served in your room or executive lounge",
-    price: 45,
-    category: "dining"
-  },
-  {
-    id: "dinner-package",
-    name: "Fine Dining Experience",
-    description: "3-course dinner at our signature restaurant with wine pairing",
-    price: 180,
-    category: "dining"
-  },
-  {
-    id: "city-tour",
-    name: "Accra City Tour",
-    description: "Guided tour of Accra's cultural landmarks and markets",
-    price: 200,
-    category: "activities"
-  },
-  {
-    id: "beach-excursion",
-    name: "Beach Day Excursion",
-    description: "Day trip to beautiful coastal beaches with lunch included",
-    price: 250,
-    category: "activities"
-  }
-];
 
 export function BookingClient() {
   const searchParams = useSearchParams();
@@ -94,6 +35,7 @@ export function BookingClient() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const [bookingData, setBookingData] = useState<BookingData>({});
+  const [availableServices, setAvailableServices] = useState<Service[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [guestDetails, setGuestDetails] = useState({
@@ -141,7 +83,35 @@ export function BookingClient() {
       pricePerNight: Number(searchParams.get("price")) || 350
     };
     setBookingData(data);
+
+    // Fetch room type services
+    if (data.roomSlug) {
+      fetchRoomServices(data.roomSlug);
+    }
   }, [searchParams]);
+
+  // Fetch services for the selected room type
+  async function fetchRoomServices(roomSlug: string) {
+    try {
+      // First, get room types to find the one matching this slug
+      const roomTypesResponse = await fetch("/api/room-types");
+      if (roomTypesResponse.ok) {
+        const roomTypesData = await roomTypesResponse.json();
+        if (roomTypesData.success) {
+          const roomType = roomTypesData.data.roomTypes.find(
+            (rt: any) => rt.slug === roomSlug
+          );
+          
+          if (roomType && roomType.services) {
+            // roomType.services contains the populated service objects
+            setAvailableServices(roomType.services);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching room services:", error);
+    }
+  }
 
   // Auto-fill guest details when user is authenticated
   useEffect(() => {
@@ -169,7 +139,7 @@ export function BookingClient() {
     const nights = calculateNights();
     const roomTotal = (bookingData.pricePerNight || 0) * nights * (bookingData.rooms || 1);
     const servicesTotal = selectedServices.reduce((total, serviceId) => {
-      const service = additionalServices.find(s => s.id === serviceId);
+      const service = availableServices.find(s => s._id === serviceId);
       return total + (service?.price || 0);
     }, 0);
     return roomTotal + servicesTotal;
@@ -201,9 +171,88 @@ export function BookingClient() {
 
   const handlePayment = async () => {
     setIsProcessing(true);
+    let bookingId: string | null = null;
     
     try {
-      // Initialize transaction with backend
+      // Validate required fields before sending
+      if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email || !guestDetails.phone || !guestDetails.country) {
+        alert('Please fill in all guest details');
+        setIsProcessing(false);
+        return;
+      }
+
+      if (!bookingData.checkIn || !bookingData.checkOut) {
+        alert('Please select check-in and check-out dates');
+        setIsProcessing(false);
+        return;
+      }
+
+      const nights = calculateNights();
+      if (nights <= 0) {
+        alert('Invalid dates selected');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Step 1: Create booking with PENDING payment status
+      const bookingPayload = {
+        // Guest details
+        guestFirstName: guestDetails.firstName,
+        guestLastName: guestDetails.lastName,
+        guestEmail: guestDetails.email,
+        guestPhone: guestDetails.phone,
+        guestCountry: guestDetails.country,
+        specialRequests: guestDetails.specialRequests || '',
+        
+        // Room details
+        roomSlug: bookingData.roomSlug || 'standard-room',
+        roomName: bookingData.roomName || 'Standard Room',
+        roomImage: bookingData.roomImage || '/hero.jpg',
+        pricePerNight: bookingData.pricePerNight || 350,
+        numberOfRooms: bookingData.rooms || 1,
+        
+        // Dates
+        checkIn: bookingData.checkIn,
+        checkOut: bookingData.checkOut,
+        nights: nights,
+        
+        // Guests
+        adults: bookingData.adults || 1,
+        children: bookingData.children || 0,
+        totalGuests: bookingData.guests || bookingData.adults || 1,
+        
+        // Services
+        additionalServices: selectedServices.map(id => {
+          const service = availableServices.find((s: Service) => s._id === id);
+          return service ? { id: service._id, name: service.name, price: service.price } : null;
+        }).filter(Boolean),
+        
+        // Payment
+        totalAmount: calculateTotal(),
+        paymentMethod: paymentMethod,
+      };
+
+      console.log('📤 Sending booking data:', bookingPayload);
+
+      const bookingResponse = await fetch('/api/bookings/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(bookingPayload),
+      });
+
+      const bookingData_response = await bookingResponse.json();
+
+      if (!bookingResponse.ok) {
+        throw new Error(bookingData_response.error || 'Failed to create booking');
+      }
+
+      console.log('✅ Booking created with pending status:', bookingData_response.data.booking);
+      bookingId = bookingData_response.data.booking.id;
+
+      // Step 2: Initialize payment with Paystack
       const response = await fetch('/api/paystack/initialize', {
         method: 'POST',
         headers: {
@@ -213,6 +262,7 @@ export function BookingClient() {
           email: guestDetails.email,
           amount: calculateTotal(),
           metadata: {
+            bookingId: bookingId,
             roomSlug: bookingData.roomSlug,
             roomName: bookingData.roomName,
             checkIn: bookingData.checkIn,
@@ -221,8 +271,8 @@ export function BookingClient() {
             children: bookingData.children,
             rooms: bookingData.rooms,
             selectedServices: selectedServices.map(id => {
-              const service = additionalServices.find(s => s.id === id);
-              return service ? { id: service.id, name: service.name, price: service.price } : null;
+              const service = availableServices.find((s: Service) => s._id === id);
+              return service ? { id: service._id, name: service.name, price: service.price } : null;
             }).filter(Boolean),
             guestDetails: guestDetails,
           },
@@ -235,11 +285,12 @@ export function BookingClient() {
         throw new Error(data.error || 'Failed to initialize payment');
       }
 
-      // Use Paystack Popup to complete payment
+      // Step 3: Use Paystack Popup to complete payment
       const paystack = new PaystackPop();
       paystack.resumeTransaction(data.data.access_code);
 
-      // Listen for payment completion
+      // Step 4: Listen for payment completion or failure
+      let paymentCompleted = false;
       const checkPaymentStatus = setInterval(async () => {
         try {
           const verifyResponse = await fetch(
@@ -249,23 +300,67 @@ export function BookingClient() {
 
           if (verifyData.success) {
             clearInterval(checkPaymentStatus);
+            paymentCompleted = true;
+            
+            // Update booking to confirmed status
+            await fetch('/api/bookings/confirm-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                bookingId: bookingId,
+                reference: data.data.reference 
+              }),
+            });
+            
             setIsProcessing(false);
             setBookingComplete(true);
+            console.log('✅ Payment verified and booking confirmed!');
+          } else if (verifyData.error && verifyData.status === 'failed') {
+            clearInterval(checkPaymentStatus);
+            throw new Error('Payment failed. Please try again with a different payment method.');
           }
         } catch (error) {
           console.error('Error checking payment status:', error);
         }
       }, 3000);
 
-      // Clear interval after 5 minutes
-      setTimeout(() => {
+      // Clear interval after 2 minutes and check final status
+      setTimeout(async () => {
         clearInterval(checkPaymentStatus);
-        setIsProcessing(false);
-      }, 300000);
+        
+        if (!paymentCompleted && bookingId) {
+          // Payment timeout - cancel the booking
+          await fetch('/api/bookings/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId }),
+          });
+          
+          setIsProcessing(false);
+          alert('Payment timeout. Your booking has been cancelled. Please try again.');
+        }
+      }, 120000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
+      
+      // If booking was created but payment failed, cancel it
+      if (bookingId) {
+        try {
+          await fetch('/api/bookings/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId }),
+          });
+          console.log('Booking cancelled due to payment failure');
+        } catch (cancelError) {
+          console.error('Failed to cancel booking:', cancelError);
+        }
+      }
+      
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Payment failed. Please try again with a different payment method.';
+      alert(errorMessage);
       setIsProcessing(false);
     }
   };
@@ -444,23 +539,28 @@ export function BookingClient() {
                   <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Enhance Your Stay</h2>
                   <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Select additional services to make your experience unforgettable</p>
                   
-                  {["transport", "spa", "dining", "activities"].map((category) => (
+                  {availableServices.length === 0 ? (
+                    <p className="text-sm text-gray-500">No additional services available for this room type.</p>
+                  ) : (
+                    ["transport", "spa", "dining", "activities", "other"].filter(category => 
+                      availableServices.some(s => s.category === category)
+                    ).map((category) => (
                     <div key={category} className="mb-4 sm:mb-6">
                       <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 capitalize text-gray-800">
                         {category === "transport" ? "Transportation" : category}
                       </h3>
                       <div className="grid gap-2 sm:gap-3 md:grid-cols-2">
-                        {additionalServices
+                        {availableServices
                           .filter(service => service.category === category)
                           .map((service) => (
                             <div
-                              key={service.id}
+                              key={service._id}
                               className={`border rounded-xl sm:rounded-2xl p-3 sm:p-4 cursor-pointer transition-all ${
-                                selectedServices.includes(service.id)
+                                selectedServices.includes(service._id)
                                   ? "border-[#01a4ff] bg-[#01a4ff]/5"
                                   : "border-gray-200 hover:border-gray-300"
                               }`}
-                              onClick={() => handleServiceToggle(service.id)}
+                              onClick={() => handleServiceToggle(service._id)}
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
@@ -469,11 +569,11 @@ export function BookingClient() {
                                   <p className="font-semibold text-sm sm:text-base text-[#01a4ff] mt-2">₵{service.price.toLocaleString()}</p>
                                 </div>
                                 <div className={`w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center ${
-                                  selectedServices.includes(service.id)
+                                  selectedServices.includes(service._id)
                                     ? "border-[#01a4ff] bg-[#01a4ff]"
                                     : "border-gray-300"
                                 }`}>
-                                  {selectedServices.includes(service.id) && (
+                                  {selectedServices.includes(service._id) && (
                                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                     </svg>
@@ -484,7 +584,8 @@ export function BookingClient() {
                           ))}
                       </div>
                     </div>
-                  ))}
+                  ))
+                  )}
                 </div>
               </>
             )}
@@ -690,7 +791,7 @@ export function BookingClient() {
                       <span className="text-gray-600 font-medium">Additional Services:</span>
                     </div>
                     {selectedServices.map(serviceId => {
-                      const service = additionalServices.find(s => s.id === serviceId);
+                      const service = availableServices.find(s => s._id === serviceId);
                       return service ? (
                         <div key={serviceId} className="flex justify-between">
                           <span className="text-gray-600">{service.name}</span>

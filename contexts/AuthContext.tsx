@@ -35,11 +35,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for existing session on mount
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
-        const savedUser = localStorage.getItem("nch_user");
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.user) {
+            setUser(data.data.user);
+          }
         }
       } catch (error) {
         console.error("Error checking auth:", error);
@@ -55,32 +62,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Check if user exists in localStorage (mock database)
-      const users = JSON.parse(localStorage.getItem("nch_users") || "[]");
-      const existingUser = users.find((u: any) => u.email === email && u.password === password);
-      
-      if (!existingUser) {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setUser(data.data.user);
         setIsLoading(false);
-        return { success: false, error: "Invalid email or password" };
+        return { success: true };
+      } else {
+        setIsLoading(false);
+        return { success: false, error: data.error || "Login failed" };
       }
-
-      const userData: User = {
-        id: existingUser.id,
-        email: existingUser.email,
-        firstName: existingUser.firstName,
-        lastName: existingUser.lastName,
-        phone: existingUser.phone,
-        country: existingUser.country
-      };
-
-      setUser(userData);
-      localStorage.setItem("nch_user", JSON.stringify(userData));
-      setIsLoading(false);
-      
-      return { success: true };
     } catch (error) {
       setIsLoading(false);
       return { success: false, error: "Login failed. Please try again." };
@@ -98,50 +98,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Check if user already exists
-      const users = JSON.parse(localStorage.getItem("nch_users") || "[]");
-      const existingUser = users.find((u: any) => u.email === userData.email);
-      
-      if (existingUser) {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setUser(data.data.user);
         setIsLoading(false);
-        return { success: false, error: "An account with this email already exists" };
+        return { success: true };
+      } else {
+        setIsLoading(false);
+        return { success: false, error: data.error || "Signup failed" };
       }
-
-      // Create new user
-      const newUser = {
-        id: Date.now().toString(),
-        ...userData
-      };
-
-      users.push(newUser);
-      localStorage.setItem("nch_users", JSON.stringify(users));
-
-      const userForState: User = {
-        id: newUser.id,
-        email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        phone: newUser.phone,
-        country: newUser.country
-      };
-
-      setUser(userForState);
-      localStorage.setItem("nch_user", JSON.stringify(userForState));
-      setIsLoading(false);
-      
-      return { success: true };
     } catch (error) {
       setIsLoading(false);
       return { success: false, error: "Signup failed. Please try again." };
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("nch_user");
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+    }
   };
 
   const value: AuthContextType = {

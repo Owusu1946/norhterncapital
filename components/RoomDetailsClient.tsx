@@ -7,8 +7,15 @@ import { SleekDatePicker } from "./SleekDatePicker";
 
 import type { Room } from "../lib/rooms";
 
+// Extend Room type locally with optional capacity metadata coming from RoomType
+interface RoomWithCapacity extends Room {
+  maxAdults?: number;
+  maxChildren?: number;
+  totalRooms?: number;
+}
+
 interface RoomDetailsClientProps {
-  room: Room;
+  room: RoomWithCapacity;
 }
 
 export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
@@ -18,6 +25,10 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [canBook, setCanBook] = useState(false);
   const [bookingMessage, setBookingMessage] = useState<string | null>(null);
+  const [warningModal, setWarningModal] = useState<{ open: boolean; message: string | null }>({
+    open: false,
+    message: null,
+  });
   const [bookingData, setBookingData] = useState<{
     checkIn: string | null;
     checkOut: string | null;
@@ -55,7 +66,7 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
     setActiveIndex((index + images.length) % images.length);
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -87,15 +98,103 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
     const hasDates = bookingData.checkIn && bookingData.checkOut;
 
     if (!hasDates) {
-      setStatusMessage("Please select your check-in and check-out dates to check availability.");
+      const message = "Please select your check-in and check-out dates to check availability.";
+      setStatusMessage(message);
+      setWarningModal({ open: true, message });
       setCanBook(false);
       setBookingMessage(null);
       return;
     }
 
-    setStatusMessage("Good news  this room is available for your selected dates.");
-    setCanBook(true);
-    setBookingMessage(null);
+    // Capacity constraints per room type
+    const perRoomMaxGuests = room.maxGuests ?? Infinity;
+    const perRoomMaxAdults = (room.maxAdults ?? room.maxGuests) ?? Infinity;
+    const perRoomMaxChildren = (room.maxChildren ?? room.maxGuests) ?? Infinity;
+
+    const maxGuestsAllowed = perRoomMaxGuests * rooms;
+    const maxAdultsAllowed = perRoomMaxAdults * rooms;
+    const maxChildrenAllowed = perRoomMaxChildren * rooms;
+
+    // Validate against room type capacities
+    if (adults > maxAdultsAllowed) {
+      const message =
+        `This room type allows up to ${perRoomMaxAdults} adult${perRoomMaxAdults !== 1 ? "s" : ""} per room (${maxAdultsAllowed} total for ${rooms} room${rooms !== 1 ? "s" : ""}).`;
+      setStatusMessage(message);
+      setWarningModal({ open: true, message });
+      setCanBook(false);
+      setBookingMessage(null);
+      return;
+    }
+
+    if (children > maxChildrenAllowed) {
+      const message =
+        `This room type allows up to ${perRoomMaxChildren} child${perRoomMaxChildren !== 1 ? "ren" : ""} per room (${maxChildrenAllowed} total for ${rooms} room${rooms !== 1 ? "s" : ""}).`;
+      setStatusMessage(message);
+      setWarningModal({ open: true, message });
+      setCanBook(false);
+      setBookingMessage(null);
+      return;
+    }
+
+    if (totalGuests > maxGuestsAllowed) {
+      const message =
+        `This room type allows up to ${perRoomMaxGuests} guest${perRoomMaxGuests !== 1 ? "s" : ""} per room (${maxGuestsAllowed} total for ${rooms} room${rooms !== 1 ? "s" : ""}).`;
+      setStatusMessage(message);
+      setWarningModal({ open: true, message });
+      setCanBook(false);
+      setBookingMessage(null);
+      return;
+    }
+
+    // Check how many rooms of this type are actually available
+    try {
+      setStatusMessage("Checking availability...");
+      setCanBook(false);
+      setBookingMessage(null);
+
+      const response = await fetch(`/api/rooms?roomType=${encodeURIComponent(room.slug)}&status=available`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const message = "We couldn't check availability at the moment. Please try again.";
+        setStatusMessage(message);
+        setWarningModal({ open: true, message });
+        return;
+      }
+
+      const data = await response.json();
+      const availableRooms = Array.isArray(data?.data?.rooms) ? data.data.rooms.length : 0;
+
+      if (availableRooms === 0) {
+        const message = "All rooms of this type are currently occupied for your selected dates.";
+        setStatusMessage(message);
+        setWarningModal({ open: true, message });
+        setCanBook(false);
+        return;
+      }
+
+      if (rooms > availableRooms) {
+        const label = availableRooms === 1 ? "room is" : "rooms are";
+        const message =
+          `Only ${availableRooms} ${label} available for this room type. Please reduce the number of rooms or choose different dates.`;
+        setStatusMessage(message);
+        setWarningModal({ open: true, message });
+        setCanBook(false);
+        return;
+      }
+
+      setStatusMessage("Good news this room is available for your selected dates.");
+      setCanBook(true);
+      setBookingMessage(null);
+    } catch (error) {
+      console.error("Error checking availability", error);
+      const message = "We couldn't check availability at the moment. Please try again.";
+      setStatusMessage(message);
+      setWarningModal({ open: true, message });
+      setCanBook(false);
+      setBookingMessage(null);
+    }
   }
 
   function handleBookClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -131,6 +230,45 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
 
   return (
     <div className="mx-auto max-w-6xl">
+      {/* Warning modal */}
+      {warningModal.open && warningModal.message && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl shadow-black/30">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="relative flex h-10 w-10 items-center justify-center">
+                <span className="absolute inline-flex h-10 w-10 animate-ping rounded-full bg-red-400/40" />
+                <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="h-5 w-5"
+                  >
+                    <path d="M6 6l12 12M6 18L18 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-gray-900">Please review your booking</h2>
+                <p className="mt-1 text-xs text-gray-500">We need you to adjust a few details before continuing.</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-700">{warningModal.message}</p>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setWarningModal({ open: false, message: null })}
+                className="inline-flex items-center rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="mb-8 space-y-2 sm:mb-10">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#01a4ff]">
           Room Details
@@ -155,7 +293,15 @@ export function RoomDetailsClient({ room }: RoomDetailsClientProps) {
                     index === activeIndex ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <Image src={src} alt={room.name} fill className="object-cover" />
+                  <Image
+                    src={src}
+                    alt={room.name}
+                    fill
+                    className="object-cover"
+                    priority={index === 0}
+                    quality={95}
+                    sizes="(min-width: 1024px) 960px, (min-width: 640px) 100vw, 100vw"
+                  />
                 </div>
               ))}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />

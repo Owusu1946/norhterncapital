@@ -14,6 +14,7 @@ import {
   Coffee,
   Tv,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import { DateRange } from "react-date-range";
 import { format, differenceInDays } from "date-fns";
@@ -21,11 +22,7 @@ import Image from "next/image";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 
-export type RoomCategory =
-  | "Standard Room"
-  | "Deluxe Room"
-  | "Suite"
-  | "Family Room"
+export type RoomCategory = string; // Dynamic from API
 
 export interface GuestAndRoomSelection {
   adults: number;
@@ -35,12 +32,15 @@ export interface GuestAndRoomSelection {
 
 export interface AvailableRoom {
   id: string;
+  slug: string;
   name: string;
   category: RoomCategory;
   image: string;
   price: number;
   available: number;
   maxGuests: number;
+  maxAdults?: number;
+  maxChildren?: number;
   amenities: string[];
   description: string;
 }
@@ -57,6 +57,11 @@ export interface BookingCardProps {
   availableCategories: RoomCategory[];
   onSearch: () => void;
 }
+
+// Cache for room types to improve performance
+let roomTypesCache: any[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
 export function BookingCard({
   defaultRoomType = "Select room type",
@@ -77,7 +82,52 @@ export function BookingCard({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchResults, setSearchResults] = useState<AvailableRoom[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [roomTypes, setRoomTypes] = useState<any[]>([]);
+  const [currentRoomType, setCurrentRoomType] = useState<any>(null);
+  const [warningModal, setWarningModal] = useState<{ open: boolean; message: string | null }>({
+    open: false,
+    message: null,
+  });
   const cardRef = useRef<HTMLElement>(null);
+
+  // Fetch room types from API with caching for better performance
+  useEffect(() => {
+    async function fetchRoomTypes() {
+      // Check if cache is still valid
+      const now = Date.now();
+      if (roomTypesCache && now - cacheTimestamp < CACHE_DURATION) {
+        setRoomTypes(roomTypesCache);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/public/room-types');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.roomTypes) {
+            roomTypesCache = data.data.roomTypes;
+            cacheTimestamp = now;
+            setRoomTypes(data.data.roomTypes);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching room types:', error);
+        // Use cache even if expired if fetch fails
+        if (roomTypesCache) {
+          setRoomTypes(roomTypesCache);
+        }
+      }
+    }
+    fetchRoomTypes();
+  }, []);
+
+  // Update current room type when selection changes
+  useEffect(() => {
+    if (selectedRoomCategory && roomTypes.length > 0) {
+      const roomType = roomTypes.find(rt => rt.name === selectedRoomCategory);
+      setCurrentRoomType(roomType);
+    }
+  }, [selectedRoomCategory, roomTypes]);
 
   // Close all dropdowns when clicking outside
   useEffect(() => {
@@ -148,8 +198,49 @@ export function BookingCard({
     guestAndRoomSelection.rooms > 0
   );
 
+  // Validate guest selection
+  const validateGuests = () => {
+    if (!currentRoomType) return true;
+
+    const { adults, children, rooms } = guestAndRoomSelection;
+    const totalGuests = adults + children;
+
+    const perRoomMaxGuests = currentRoomType.maxGuests ?? 10;
+    const perRoomMaxAdults = currentRoomType.maxAdults ?? perRoomMaxGuests;
+    const perRoomMaxChildren = currentRoomType.maxChildren ?? perRoomMaxGuests;
+
+    const maxGuestsAllowed = perRoomMaxGuests * rooms;
+    const maxAdultsAllowed = perRoomMaxAdults * rooms;
+    const maxChildrenAllowed = perRoomMaxChildren * rooms;
+
+    if (adults > maxAdultsAllowed) {
+      const message = `This room type allows up to ${perRoomMaxAdults} adult${perRoomMaxAdults !== 1 ? "s" : ""} per room (${maxAdultsAllowed} total for ${rooms} room${rooms !== 1 ? "s" : ""}).`;
+      setWarningModal({ open: true, message });
+      return false;
+    }
+
+    if (children > maxChildrenAllowed) {
+      const message = `This room type allows up to ${perRoomMaxChildren} child${perRoomMaxChildren !== 1 ? "ren" : ""} per room (${maxChildrenAllowed} total for ${rooms} room${rooms !== 1 ? "s" : ""}).`;
+      setWarningModal({ open: true, message });
+      return false;
+    }
+
+    if (totalGuests > maxGuestsAllowed) {
+      const message = `This room type allows up to ${perRoomMaxGuests} guest${perRoomMaxGuests !== 1 ? "s" : ""} per room (${maxGuestsAllowed} total for ${rooms} room${rooms !== 1 ? "s" : ""}).`;
+      setWarningModal({ open: true, message });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSearchClick = async () => {
     if (isSearchEnabled) {
+      // Validate guests before searching
+      if (!validateGuests()) {
+        return;
+      }
+
       // Close all dropdowns before searching
       setIsDatePickerOpen(false);
       setIsGuestsOpen(false);
@@ -157,30 +248,37 @@ export function BookingCard({
       
       setIsSearching(true);
       
-      // Simulate API call to search for available rooms
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock search results based on selected category
-      const mockResults: AvailableRoom[] = [
-        {
-          id: "1",
-          name: selectedRoomCategory,
-          category: selectedRoomCategory,
-          image: "/hero.jpg",
-          price: selectedRoomCategory === "Standard Room" ? 180 : 
-                 selectedRoomCategory === "Deluxe Room" ? 260 :
-                 selectedRoomCategory === "Suite" ? 450 : 320,
-          available: 5,
-          maxGuests: selectedRoomCategory === "Family Room" ? 6 : 
-                     selectedRoomCategory === "Suite" ? 4 : 2,
-          amenities: ["Free WiFi", "TV", "Coffee Maker", "Air Conditioning"],
-          description: `Comfortable ${selectedRoomCategory.toLowerCase()} with modern amenities and stunning views.`
+      try {
+        // Use real room type data if available
+        if (currentRoomType) {
+          const availableRoom: AvailableRoom = {
+            id: currentRoomType.slug || "1",
+            slug: currentRoomType.slug || selectedRoomCategory.toLowerCase().replace(/\s+/g, '-'),
+            name: currentRoomType.name,
+            category: selectedRoomCategory,
+            image: currentRoomType.image || "/hero.jpg",
+            price: currentRoomType.priceFrom || currentRoomType.pricePerNight || 250,
+            available: currentRoomType.totalRooms || 5,
+            maxGuests: currentRoomType.maxGuests || 2,
+            maxAdults: currentRoomType.maxAdults,
+            maxChildren: currentRoomType.maxChildren,
+            amenities: currentRoomType.amenities || ["Free WiFi", "TV", "Coffee Maker", "Air Conditioning"],
+            description: currentRoomType.description || `Comfortable ${selectedRoomCategory.toLowerCase()} with modern amenities and stunning views.`
+          };
+          
+          setSearchResults([availableRoom]);
+        } else {
+          // Fallback if room type not found
+          setSearchResults([]);
         }
-      ];
-      
-      setSearchResults(mockResults);
-      setShowSearchResults(true);
-      setIsSearching(false);
+        
+        setShowSearchResults(true);
+      } catch (error) {
+        console.error('Error searching rooms:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
       
       // Call the original onSearch callback
       onSearch();
@@ -190,11 +288,11 @@ export function BookingCard({
   const handleBookRoom = (room: AvailableRoom) => {
     if (!checkInDate || !checkOutDate) return;
     
-    const nights = differenceInDays(checkOutDate, checkInDate);
     const totalGuests = guestAndRoomSelection.adults + guestAndRoomSelection.children;
     
     // Build query parameters for booking page
     const params = new URLSearchParams({
+      roomSlug: room.slug,
       roomName: room.name,
       roomImage: room.image,
       checkIn: checkInDate.toISOString().split('T')[0],
@@ -206,7 +304,7 @@ export function BookingCard({
       price: room.price.toString(),
     });
     
-    // Navigate to booking page
+    // Navigate to booking page with room slug
     router.push(`/booking?${params.toString()}`);
   };
 
@@ -287,6 +385,7 @@ export function BookingCard({
           <GuestControls
             selection={guestAndRoomSelection}
             onChange={onGuestAndRoomChange}
+            roomType={currentRoomType}
           />
         </InteractiveField>
 
@@ -333,6 +432,34 @@ export function BookingCard({
           </button>
         ))}
       </div>
+
+      {/* Warning Modal */}
+      {warningModal.open && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            onClick={() => setWarningModal({ open: false, message: null })}
+          />
+          
+          {/* Modal */}
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 transform px-4">
+            <div className="rounded-2xl bg-white p-6 shadow-2xl">
+              <div className="flex items-center gap-3 text-amber-600 mb-4">
+                <AlertTriangle className="h-6 w-6" />
+                <h3 className="text-lg font-semibold">Capacity Limit</h3>
+              </div>
+              <p className="text-gray-700">{warningModal.message}</p>
+              <button
+                onClick={() => setWarningModal({ open: false, message: null })}
+                className="mt-6 w-full rounded-xl bg-[#01a4ff] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0084cc]"
+              >
+                Understood
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Search Results Modal */}
       {showSearchResults && (
@@ -536,12 +663,22 @@ function InteractiveField({
 interface GuestControlsProps {
   selection: GuestAndRoomSelection;
   onChange: (selection: GuestAndRoomSelection) => void;
+  roomType?: any;
 }
 
-function GuestControls({ selection, onChange }: GuestControlsProps) {
+function GuestControls({ selection, onChange, roomType }: GuestControlsProps) {
   function update(partial: Partial<GuestAndRoomSelection>) {
     onChange({ ...selection, ...partial });
   }
+
+  // Calculate limits based on room type
+  const perRoomMaxGuests = roomType?.maxGuests ?? 10;
+  const perRoomMaxAdults = roomType?.maxAdults ?? perRoomMaxGuests;
+  const perRoomMaxChildren = roomType?.maxChildren ?? perRoomMaxGuests;
+
+  const maxAdultsAllowed = perRoomMaxAdults * selection.rooms;
+  const maxChildrenAllowed = perRoomMaxChildren * selection.rooms;
+  const maxRoomsAllowed = roomType?.totalRooms ?? 10;
 
   return (
     <div className="space-y-3 text-sm text-black">
@@ -549,20 +686,33 @@ function GuestControls({ selection, onChange }: GuestControlsProps) {
         label="Adults"
         value={selection.adults}
         min={1}
+        max={maxAdultsAllowed}
         onChange={(value) => update({ adults: value })}
+        hint={roomType ? `Max ${perRoomMaxAdults} per room` : undefined}
       />
       <GuestRow
         label="Children"
         value={selection.children}
         min={0}
+        max={maxChildrenAllowed}
         onChange={(value) => update({ children: value })}
+        hint={roomType ? `Max ${perRoomMaxChildren} per room` : undefined}
       />
       <GuestRow
         label="Rooms"
         value={selection.rooms}
         min={1}
+        max={maxRoomsAllowed}
         onChange={(value) => update({ rooms: value })}
+        hint={roomType ? `${roomType.totalRooms || 'Multiple'} available` : undefined}
       />
+      {roomType && (
+        <div className="mt-2 p-2 bg-blue-50 rounded-lg text-xs text-blue-700">
+          <p className="font-medium">Room Capacity:</p>
+          <p>• Max {perRoomMaxGuests} guest{perRoomMaxGuests !== 1 ? 's' : ''} per room</p>
+          <p>• Total capacity: {perRoomMaxGuests * selection.rooms} guest{(perRoomMaxGuests * selection.rooms) !== 1 ? 's' : ''}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -571,31 +721,49 @@ interface GuestRowProps {
   label: string;
   value: number;
   min: number;
+  max?: number;
   onChange: (value: number) => void;
+  hint?: string;
 }
 
-function GuestRow({ label, value, min, onChange }: GuestRowProps) {
+function GuestRow({ label, value, min, max, onChange, hint }: GuestRowProps) {
+  const isAtMax = max !== undefined && value >= max;
+  const isAtMin = value <= min;
+
   return (
-    <div className="flex items-center justify-between">
-      <span>{label}</span>
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => onChange(Math.max(min, value - 1))}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-black/15 text-sm text-black/70 disabled:opacity-40"
-          disabled={value <= min}
-        >
-          -
-        </button>
-        <span className="w-6 text-center text-sm font-semibold">{value}</span>
-        <button
-          type="button"
-          onClick={() => onChange(value + 1)}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-[#01a4ff] bg-[#01a4ff] text-sm text-white"
-        >
-          +
-        </button>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <span>{label}</span>
+          {hint && <span className="text-xs text-gray-500">{hint}</span>}
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onChange(Math.max(min, value - 1))}
+            className="flex h-7 w-7 items-center justify-center rounded-full border border-black/15 text-sm text-black/70 disabled:opacity-40"
+            disabled={isAtMin}
+          >
+            -
+          </button>
+          <span className="w-6 text-center text-sm font-semibold">{value}</span>
+          <button
+            type="button"
+            onClick={() => onChange(max ? Math.min(max, value + 1) : value + 1)}
+            className={`flex h-7 w-7 items-center justify-center rounded-full border text-sm transition-colors ${
+              isAtMax 
+                ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "border-[#01a4ff] bg-[#01a4ff] text-white hover:bg-[#0084cc]"
+            }`}
+            disabled={isAtMax}
+          >
+            +
+          </button>
+        </div>
       </div>
+      {isAtMax && (
+        <p className="text-xs text-amber-600 text-right">Maximum reached</p>
+      )}
     </div>
   );
 }
