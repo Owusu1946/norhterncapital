@@ -74,8 +74,8 @@ const Tooltip = ({ children, text, show }: { children: React.ReactNode; text: st
 
   return (
     <div className="relative"
-         onMouseEnter={() => setIsVisible(true)}
-         onMouseLeave={() => setIsVisible(false)}>
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}>
       {children}
       {isVisible && (
         <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md whitespace-nowrap z-50
@@ -125,7 +125,7 @@ export function AdminSidebar() {
         // Clear any local storage if needed
         localStorage.removeItem("user");
         sessionStorage.clear();
-        
+
         // Redirect to login page
         router.push("/admin/login");
       } else {
@@ -155,15 +155,15 @@ export function AdminSidebar() {
           if (data.success && data.data.user) {
             const user = data.data.user;
             setUserRole(user.role);
-            
+
             console.log("User role:", user.role);
             console.log("User allowed menus:", user.allowedMenus);
-            
+
             // If staff, use their allowed menus; if admin, show all
             if (user.role === "staff") {
               // For staff, only show menus they are allowed to see
-              const staffMenus = user.allowedMenus && user.allowedMenus.length > 0 
-                ? user.allowedMenus 
+              const staffMenus = user.allowedMenus && user.allowedMenus.length > 0
+                ? user.allowedMenus
                 : ["Dashboard"]; // Default to Dashboard only if no menus specified
               setAllowedMenus(staffMenus);
             } else if (user.role === "admin") {
@@ -268,9 +268,8 @@ export function AdminSidebar() {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className={`rounded-lg p-2 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 hover:shadow-sm ${
-            !expanded ? 'ml-0' : 'ml-auto'
-          }`}
+          className={`rounded-lg p-2 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 hover:shadow-sm ${!expanded ? 'ml-0' : 'ml-auto'
+            }`}
           title={expanded ? "Collapse sidebar" : "Expand sidebar"}
         >
           {expanded ? (
@@ -283,14 +282,27 @@ export function AdminSidebar() {
 
       {/* Navigation Icons */}
       <nav className="flex-1 flex flex-col gap-1.5 px-3 py-4 overflow-y-auto overflow-x-hidden"
-           style={{
-             /* Hide scrollbar */
-             msOverflowStyle: 'none',
-             scrollbarWidth: 'none',
-           }}>
-        {navItems.filter(item => {
+        style={{
+          /* Hide scrollbar */
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+        }}>
+        {loading ? (
+          <div className="space-y-1">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className={`flex items-center px-3 py-2.5 ${!expanded ? "justify-center" : ""}`}
+              >
+                <div className="h-5 w-5 rounded bg-gray-100 animate-pulse shrink-0" />
+                {expanded && (
+                  <div className="ml-3 h-4 w-24 rounded bg-gray-100 animate-pulse" />
+                )}
+              </div>
+            ))}
+          </div>
+        ) : navItems.filter(item => {
           // Filter menu items based on user's allowed menus
-          if (loading) return false; // Don't show any menus while loading
           if (userRole === "admin") return true; // Admin sees all
           if (userRole === "staff") {
             return allowedMenus && allowedMenus.includes(item.label); // Staff sees only allowed menus
@@ -300,7 +312,7 @@ export function AdminSidebar() {
           const Icon = item.icon;
           // Check if current route matches this nav item
           const isActive = item.href ? (
-            item.subItems ? 
+            item.subItems ?
               pathname?.startsWith(item.href) || item.subItems.some(sub => pathname === sub.href) :
               pathname === item.href
           ) : false;
@@ -315,76 +327,72 @@ export function AdminSidebar() {
           return (
             <div key={index}>
               <Tooltip text={item.label} show={!expanded}>
-              <button
-                type="button"
-                onClick={() => {
-                  if ((isRooms || isRestaurant) && hasSubItems) {
-                    // For Rooms and Restaurant, only toggle submenu (and expand if collapsed), do not navigate
-                    if (!expanded) {
-                      setExpanded(true);
+                <button
+                  type="button"
+                  onClick={() => {
+                    if ((isRooms || isRestaurant) && hasSubItems) {
+                      // For Rooms and Restaurant, only toggle submenu (and expand if collapsed), do not navigate
+                      if (!expanded) {
+                        setExpanded(true);
+                      }
+                      if (isRooms) {
+                        setRoomsOpen((v) => !v);
+                      } else if (isRestaurant) {
+                        setRestaurantOpen((v) => !v);
+                      }
+                      return;
                     }
-                    if (isRooms) {
-                      setRoomsOpen((v) => !v);
-                    } else if (isRestaurant) {
-                      setRestaurantOpen((v) => !v);
+                    if (item.href) {
+                      router.push(item.href);
                     }
-                    return;
-                  }
-                  if (item.href) {
-                    router.push(item.href);
-                  }
-                }}
-                className={`group relative flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${
-                  isActive
-                    ? "bg-gradient-to-r from-blue-50 to-blue-50/50 text-blue-600 shadow-sm"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
-                }`}
-              >
-                {isActive && (
-                  <div
-                    className="absolute left-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-r-full transition-all duration-300"
-                    style={{ background: "linear-gradient(180deg, #01a4ff 0%, #0090e0 100%)" }}
-                  />
-                )}
+                  }}
+                  className={`group relative flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${isActive
+                      ? "bg-gradient-to-r from-blue-50 to-blue-50/50 text-blue-600 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
+                    }`}
+                >
+                  {isActive && (
+                    <div
+                      className="absolute left-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-r-full transition-all duration-300"
+                      style={{ background: "linear-gradient(180deg, #01a4ff 0%, #0090e0 100%)" }}
+                    />
+                  )}
 
-                <div className="relative z-10 flex items-center gap-3">
-                  <Icon
-                    className={`h-5 w-5 transition-all duration-200 ${
-                      isActive
-                        ? "text-blue-600"
-                        : "text-gray-500 group-hover:text-gray-700"
-                    } ${!expanded ? 'mx-auto' : ''}`}
-                  />
-                  <div className={`flex items-center gap-2 transition-all duration-300 ${
-                    expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
-                  }`}>
-                    <span className={`text-sm font-medium ${
-                      isActive ? 'text-gray-900' : 'text-gray-700'
-                    }`}>
-                      {item.label}
-                    </span>
-                    {isBookings && bookingsCount > 0 && (
-                      <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-                        {bookingsCount}
+                  <div className="relative z-10 flex items-center gap-3">
+                    <Icon
+                      className={`h-5 w-5 transition-all duration-200 ${isActive
+                          ? "text-blue-600"
+                          : "text-gray-500 group-hover:text-gray-700"
+                        } ${!expanded ? 'mx-auto' : ''}`}
+                    />
+                    <div className={`flex items-center gap-2 transition-all duration-300 ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+                      }`}>
+                      <span className={`text-sm font-medium ${isActive ? 'text-gray-900' : 'text-gray-700'
+                        }`}>
+                        {item.label}
                       </span>
-                    )}
+                      {isBookings && bookingsCount > 0 && (
+                        <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                          {bookingsCount}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {!expanded && isBookings && bookingsCount > 0 && (
-                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                )}
+                  {!expanded && isBookings && bookingsCount > 0 && (
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                  )}
 
-                {expanded && (isRooms || isRestaurant) && hasSubItems && (
-                  <span className="relative z-10 text-gray-400 group-hover:text-gray-600 transition-transform duration-200">
-                    {(isRooms && roomsOpen) || (isRestaurant && restaurantOpen) ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </span>
-                )}
-              </button>
+                  {expanded && (isRooms || isRestaurant) && hasSubItems && (
+                    <span className="relative z-10 text-gray-400 group-hover:text-gray-600 transition-transform duration-200">
+                      {(isRooms && roomsOpen) || (isRestaurant && restaurantOpen) ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </span>
+                  )}
+                </button>
               </Tooltip>
 
               {showSubItems && item.subItems && (
@@ -401,21 +409,18 @@ export function AdminSidebar() {
                             router.push(sub.href);
                           }
                         }}
-                        className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs transition-all duration-200 group ${
-                          isSubActive
+                        className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs transition-all duration-200 group ${isSubActive
                             ? "bg-blue-50 text-blue-600"
                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                        }`}
+                          }`}
                       >
                         <span className="flex items-center gap-2.5">
-                          <SubIcon className={`h-4 w-4 transition-colors ${
-                            isSubActive
+                          <SubIcon className={`h-4 w-4 transition-colors ${isSubActive
                               ? "text-blue-500"
                               : "text-gray-400 group-hover:text-gray-600"
-                          }`} />
-                          <span className={`text-[13px] font-medium ${
-                            isSubActive ? "text-blue-700" : ""
-                          }`}>
+                            }`} />
+                          <span className={`text-[13px] font-medium ${isSubActive ? "text-blue-700" : ""
+                            }`}>
                             {sub.label}
                           </span>
                         </span>
@@ -435,61 +440,55 @@ export function AdminSidebar() {
       {/* Bottom Icons */}
       <div className="mt-auto border-t border-gray-100 p-3 space-y-2">
         <Tooltip text="Settings" show={!expanded}>
-        <button
-          type="button"
-          onClick={() => router.push("/admin/settings")}
-          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group ${
-            pathname === "/admin/settings"
-              ? "bg-gradient-to-r from-blue-50 to-blue-50/50 text-blue-600"
-              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          }`}
-        >
-          <Settings className={`h-5 w-5 text-gray-500 group-hover:text-gray-700 transition-colors ${!expanded ? 'mx-auto' : ''}`} />
-          <span className={`text-sm font-medium transition-all duration-300 ${
-            expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
-          }`}>Settings</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => router.push("/admin/settings")}
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 group ${pathname === "/admin/settings"
+                ? "bg-gradient-to-r from-blue-50 to-blue-50/50 text-blue-600"
+                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+          >
+            <Settings className={`h-5 w-5 text-gray-500 group-hover:text-gray-700 transition-colors ${!expanded ? 'mx-auto' : ''}`} />
+            <span className={`text-sm font-medium transition-all duration-300 ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+              }`}>Settings</span>
+          </button>
         </Tooltip>
 
         <Tooltip text="Profile" show={!expanded}>
-        <button
-          type="button"
-          onClick={() => router.push("/admin/profile")}
-          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 group ${
-            pathname === "/admin/profile"
-              ? "bg-gradient-to-r from-blue-50 to-blue-50/50"
-              : "hover:bg-gray-50"
-          }`}
-        >
-          <div className={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gray-200 to-gray-300 group-hover:from-gray-300 group-hover:to-gray-400 transition-all duration-200 ${
-            !expanded ? 'mx-auto' : ''
-          }`}>
-            <User className="h-4 w-4 text-gray-700" />
-          </div>
-          <div className={`flex flex-col items-start transition-all duration-300 ${
-            expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
-          }`}>
-            <span className="text-sm font-medium text-gray-800">Admin</span>
-            <span className="text-xs text-gray-500">Manager</span>
-          </div>
-        </button>
+          <button
+            type="button"
+            onClick={() => router.push("/admin/profile")}
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 group ${pathname === "/admin/profile"
+                ? "bg-gradient-to-r from-blue-50 to-blue-50/50"
+                : "hover:bg-gray-50"
+              }`}
+          >
+            <div className={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gray-200 to-gray-300 group-hover:from-gray-300 group-hover:to-gray-400 transition-all duration-200 ${!expanded ? 'mx-auto' : ''
+              }`}>
+              <User className="h-4 w-4 text-gray-700" />
+            </div>
+            <div className={`flex flex-col items-start transition-all duration-300 ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+              }`}>
+              <span className="text-sm font-medium text-gray-800">Admin</span>
+              <span className="text-xs text-gray-500">Manager</span>
+            </div>
+          </button>
         </Tooltip>
 
         {/* Logout Button */}
         <Tooltip text="Logout" show={!expanded}>
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={loggingOut}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
-        >
-          <LogOut className={`h-5 w-5 group-hover:scale-110 transition-transform ${!expanded ? 'mx-auto' : ''}`} />
-          <span className={`text-sm font-medium transition-all duration-300 ${
-            expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
-          }`}>
-            {loggingOut ? "Logging out..." : "Logout"}
-          </span>
-        </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+          >
+            <LogOut className={`h-5 w-5 group-hover:scale-110 transition-transform ${!expanded ? 'mx-auto' : ''}`} />
+            <span className={`text-sm font-medium transition-all duration-300 ${expanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 absolute'
+              }`}>
+              {loggingOut ? "Logging out..." : "Logout"}
+            </span>
+          </button>
         </Tooltip>
       </div>
     </div>

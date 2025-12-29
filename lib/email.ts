@@ -70,94 +70,107 @@ export async function sendBookingConfirmationEmail(payload: BookingEmailPayload)
   const subject = `Your Booking Confirmation - ${bookingReference}`;
 
   const html = `
-  <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color:#f4f4f5; padding:32px 16px;">
-    <div style="max-width:640px;margin:0 auto;background:white;border-radius:24px;overflow:hidden;box-shadow:0 20px 40px rgba(15,23,42,0.18);">
-      <div style="background:linear-gradient(135deg,#020617,#0f172a);padding:24px 28px 20px;color:white;">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-          <div>
-            <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#38bdf8;font-weight:600;margin-bottom:4px;">Northern Capital Hotel</div>
-            <h1 style="margin:0;font-size:22px;font-weight:700;">Booking Confirmed</h1>
-            <p style="margin:4px 0 0;font-size:13px;color:#e5e7eb;">Thank you for choosing Northern Capital Hotel. Your stay is confirmed.</p>
-          </div>
-          <div style="text-align:right;font-size:12px;color:#cbd5f5;">
-            <div style="font-weight:600;">Reference</div>
-            <div style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;font-size:13px;margin-top:2px;">${bookingReference}</div>
-          </div>
-        </div>
-      </div>
-
-      ${roomImage ? `
-      <div style="position:relative;overflow:hidden;">
-        <img src="${roomImage}" alt="${roomName}" style="display:block;width:100%;max-height:220px;object-fit:cover;">
-      </div>` : ""}
-
-      <div style="padding:22px 24px 10px 24px;">
-        <p style="margin:0 0 16px 0;font-size:14px;color:#111827;">Dear <strong>${guestFirstName} ${guestLastName}</strong>,</p>
-        <p style="margin:0 0 16px 0;font-size:13px;color:#4b5563;line-height:1.6;">
-          We are delighted to confirm your reservation at <strong>Northern Capital Hotel</strong>.
-          Below is a summary of your booking details.
-        </p>
-      </div>
-
-      <div style="padding:0 24px 4px 24px;">
-        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:8px;">
-          <div style="flex:1 1 200px;background:#f9fafb;border-radius:14px;padding:14px 14px 12px 14px;border:1px solid #e5e7eb;">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#6b7280;font-weight:600;margin-bottom:6px;">Stay</div>
-            <div style="font-size:14px;font-weight:600;color:#111827;margin-bottom:4px;">${roomName}</div>
-            <div style="font-size:12px;color:#4b5563;">${nights} night${nights !== 1 ? "s" : ""} • ${numberOfRooms} room${numberOfRooms !== 1 ? "s" : ""}</div>
-          </div>
-          <div style="flex:1 1 200px;background:#f9fafb;border-radius:14px;padding:14px 14px 12px 14px;border:1px solid #e5e7eb;">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#6b7280;font-weight:600;margin-bottom:6px;">Guests</div>
-            <div style="font-size:13px;color:#111827;">${adults} adult${adults !== 1 ? "s" : ""}${children ? ` • ${children} child${children !== 1 ? "ren" : ""}` : ""}</div>
-            <div style="font-size:12px;color:#4b5563;margin-top:2px;">Total: ${totalGuests} guest${totalGuests !== 1 ? "s" : ""}</div>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
-          <div style="flex:1 1 200px;background:#0f172a;border-radius:14px;padding:14px 14px 12px 14px;color:white;">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#38bdf8;font-weight:600;margin-bottom:6px;">Check-in</div>
-            <div style="font-size:13px;font-weight:600;">${formatDate(checkIn)}</div>
-          </div>
-          <div style="flex:1 1 200px;background:#020617;border-radius:14px;padding:14px 14px 12px 14px;color:white;">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#38bdf8;font-weight:600;margin-bottom:6px;">Check-out</div>
-            <div style="font-size:13px;font-weight:600;">${formatDate(checkOut)}</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="padding:0 24px 4px 24px;">
-        <div style="border-radius:16px;background:#f9fafb;border:1px solid #e5e7eb;padding:14px 14px 10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
-          <div>
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#6b7280;font-weight:600;margin-bottom:4px;">Total Amount</div>
-            <div style="font-size:18px;font-weight:700;color:#111827;">${formatCurrency(totalAmount)}</div>
-            <div style="font-size:11px;color:#6b7280;margin-top:2px;">Inclusive of room charges and selected services.</div>
-          </div>
-          <div style="font-size:11px;text-align:right;color:#16a34a;font-weight:600;">Paid • Booking confirmed</div>
-        </div>
-      </div>
-
-      <div style="padding:18px 24px 4px 24px;">
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#6b7280;font-weight:600;margin-bottom:6px;">Guest details</div>
-        <div style="font-size:12px;color:#4b5563;line-height:1.6;">
-          <div><strong>Name:</strong> ${guestFirstName} ${guestLastName}</div>
-          <div><strong>Email:</strong> ${guestEmail}</div>
-          ${guestPhone ? `<div><strong>Phone:</strong> ${guestPhone}</div>` : ""}
-          ${guestCountry ? `<div><strong>Country:</strong> ${guestCountry}</div>` : ""}
-        </div>
-      </div>
-
-      <div style="padding:18px 24px 22px 24px;border-top:1px solid #e5e7eb;margin-top:14px;">
-        <p style="margin:0 0 10px 0;font-size:12px;color:#4b5563;line-height:1.6;">
-          If you need to modify or cancel your reservation, please contact our team and quote your booking reference <strong>${bookingReference}</strong>.
-        </p>
-        <p style="margin:0;font-size:11px;color:#9ca3af;">We look forward to welcoming you to Northern Capital Hotel.</p>
-      </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+    <!-- Header -->
+    <div style="background-color: #ffffff; padding: 30px 24px; text-align: center; border-bottom: 1px solid #f1f5f9;">
+      <div style="font-size: 14px; font-weight: 700; color: #01a4ff; text-transform: uppercase; letter-spacing: 2px;">Northern Capital Hotel</div>
     </div>
 
-    <p style="max-width:640px;margin:12px auto 0 auto;font-size:10px;color:#9ca3af;text-align:center;">
-      This email was sent from Northern Capital Hotel. If you did not make this booking, please contact us immediately.
-    </p>
+    <!-- Hero Image -->
+    ${roomImage ? `
+    <div style="width: 100%; height: 240px; background-color: #f1f5f9;">
+      <img src="${roomImage}" alt="${roomName}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+    </div>
+    ` : ''}
+
+    <!-- Content -->
+    <div style="padding: 40px 24px;">
+      <div style="text-align: center; margin-bottom: 32px;">
+        <span style="background-color: #ecfdf5; color: #059669; border: 1px solid #d1fae5; padding: 6px 16px; border-radius: 99px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Booking Confirmed</span>
+        <h1 style="margin: 24px 0 8px 0; font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1.2;">You're going to Tamale!</h1>
+        <p style="margin: 0; font-size: 16px; color: #64748b;">Your stay at Northern Capital Hotel is confirmed.</p>
+      </div>
+
+      <!-- Key Details Card -->
+      <div style="background-color: #f8fafc; border-radius: 16px; padding: 24px; margin-bottom: 32px;">
+        <div style="margin-bottom: 24px; text-align: center;">
+          <div style="font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Booking Reference</div>
+          <div style="font-size: 24px; font-family: monospace; font-weight: 700; color: #0f172a; margin-top: 4px; letter-spacing: 2px;">${bookingReference}</div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="width: 50%; padding-bottom: 24px; vertical-align: top;">
+              <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Check-in</div>
+              <div style="font-size: 16px; font-weight: 600; color: #0f172a;">${formatDate(checkIn)}</div>
+              <div style="font-size: 13px; color: #64748b; margin-top: 2px;">After 2:00 PM</div>
+            </td>
+            <td style="width: 50%; padding-bottom: 24px; vertical-align: top;">
+              <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Check-out</div>
+              <div style="font-size: 16px; font-weight: 600; color: #0f172a;">${formatDate(checkOut)}</div>
+              <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Before 11:00 AM</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom: 0; vertical-align: top;">
+              <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Room</div>
+              <div style="font-size: 16px; font-weight: 600; color: #0f172a;">${roomName}</div>
+              <div style="font-size: 13px; color: #64748b; margin-top: 2px;">${numberOfRooms} Room${numberOfRooms > 1 ? 's' : ''}, ${nights} Night${nights > 1 ? 's' : ''}</div>
+            </td>
+             <td style="padding-bottom: 0; vertical-align: top;">
+              <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Guests</div>
+              <div style="font-size: 16px; font-weight: 600; color: #0f172a;">${totalGuests} Guest${totalGuests > 1 ? 's' : ''}</div>
+              <div style="font-size: 13px; color: #64748b; margin-top: 2px;">${adults} Adult${adults !== 1 ? 's' : ''}${children ? `, ${children} Child${children !== 1 ? 'ren' : ''}` : ''}</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Payment Summary -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase;">Payment Summary</h3>
+        <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #f8fafc; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 14px; font-weight: 600; color: #0f172a;">Total Amount Paid</span>
+            <span style="font-size: 18px; font-weight: 700; color: #01a4ff;">${formatCurrency(totalAmount)}</span>
+          </div>
+        </div>
+        <p style="margin: 12px 0 0 0; font-size: 13px; color: #64748b; text-align: center;">Safe travels! We can't wait to host you.</p>
+      </div>
+
+      <!-- Guest Details -->
+      <div style="border-top: 1px solid #f1f5f9; padding-top: 24px; margin-bottom: 32px;">
+        <h4 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Guest Details</h4>
+        <div style="font-size: 14px; color: #334155; line-height: 1.6;">
+          <p style="margin: 0;"><strong>${guestFirstName} ${guestLastName}</strong></p>
+          <p style="margin: 0;">${guestEmail}</p>
+          ${guestPhone ? `<p style="margin: 0;">${guestPhone}</p>` : ''}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align: center; border-top: 1px solid #f1f5f9; padding-top: 32px;">
+        <div style="margin-bottom: 20px;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/contact" style="display: inline-block; background-color: #01a4ff; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Contact Support</a>
+        </div>
+        <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
+          Northern Capital Hotel<br>
+          Tamale, Ghana<br>
+          Need help? Reply to this email.
+        </p>
+      </div>
+    </div>
   </div>
+</body>
+</html>
   `;
 
   await transporter.sendMail({
