@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     // Connect to database
     await connectDB();
-    
+
     // Ensure Service model is registered
     console.log("Service model imported:", !!Service);
 
@@ -32,9 +32,9 @@ export async function GET(request: NextRequest) {
       longDescription: roomType.longDescription || "",
       priceFrom: roomType.pricePerNight,
       size: roomType.size || "",
-      image: roomType.mainImage || "/hero.jpg",
-      gallery: roomType.gallery && roomType.gallery.length > 0 
-        ? roomType.gallery 
+      image: roomType.mainImage && roomType.mainImage.trim() !== "" ? roomType.mainImage : "/hero.jpg",
+      gallery: roomType.gallery && roomType.gallery.length > 0 && roomType.gallery[0] !== ""
+        ? roomType.gallery
         : ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
       perks: roomType.perks || [],
       amenities: roomType.amenities || [],
