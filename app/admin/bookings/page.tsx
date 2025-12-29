@@ -134,6 +134,36 @@ export default function AdminBookingsPage() {
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
+  /* 
+    Stats State 
+    Fetch valid counts from server instead of relying on current page aggregation 
+  */
+  const [stats, setStats] = useState({
+    confirmed: 0,
+    pending: 0,
+    cancelled: 0,
+    expiringToday: 0
+  });
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await fetch("/api/bookings/stats", { credentials: "include" });
+      if (response.ok) {
+        const json = await response.json();
+        if (json.success) {
+          setStats(json.data.counts);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch stats:", error);
+    }
+  }, []);
+
+  // Fetch stats on mount and whenever bookings change (e.g. status update)
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   // Never show bookings whose payment failed
   const filteredBookings = bookings.filter((b) => b.paymentStatus !== "failed");
 
@@ -195,6 +225,7 @@ export default function AdminBookingsPage() {
               : booking
           )
         );
+        fetchStats(); // Refresh stats after update
 
         console.log("✅ Booking status updated successfully");
       } else {
@@ -316,11 +347,18 @@ export default function AdminBookingsPage() {
             <div className="grid gap-4 md:grid-cols-4">
               <button
                 onClick={toggleExpiringSoon}
-                className={`rounded-2xl border p-4 shadow-sm text-left transition-all duration-200 hover:shadow-md ${expiringSoonFilter
+                className={`rounded-2xl border p-4 shadow-sm text-left transition-all duration-200 hover:shadow-md relative ${expiringSoonFilter
                     ? "bg-rose-50 border-rose-200 ring-2 ring-rose-500/20"
                     : "bg-white border-gray-100 hover:border-gray-200"
                   }`}
               >
+                {/* Active Count Badge */}
+                {stats.expiringToday > 0 && (
+                  <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white shadow-md animate-bounce ring-2 ring-white">
+                    {stats.expiringToday}
+                  </span>
+                )}
+
                 <div className="flex items-center gap-2 mb-1">
                   <div className={`p-1.5 rounded-full ${expiringSoonFilter ? "bg-rose-100 text-rose-600" : "bg-gray-100 text-gray-500"}`}>
                     <Calendar className="h-4 w-4" />
@@ -328,27 +366,26 @@ export default function AdminBookingsPage() {
                   <p className={`text-xs font-semibold ${expiringSoonFilter ? "text-rose-700" : "text-gray-500"}`}>Expiring Soon</p>
                 </div>
                 <p className="mt-1 text-2xl font-semibold text-gray-900">
-                  {/* Dynamic count would be better, but simplified for now */}
-                  VIEW
+                  {stats.expiringToday}
                 </p>
                 <p className={`mt-1 text-[11px] ${expiringSoonFilter ? "text-rose-600" : "text-gray-500"}`}>
-                  Leaving today/tomorrow
+                  Leaving today
                 </p>
               </button>
 
               <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p className="text-xs font-medium text-gray-500">Confirmed</p>
-                <p className="mt-1 text-2xl font-semibold text-emerald-600">{totals.confirmed}</p>
+                <p className="mt-1 text-2xl font-semibold text-emerald-600">{stats.confirmed}</p>
                 <p className="mt-1 text-[11px] text-gray-500">Active bookings</p>
               </div>
               <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p className="text-xs font-medium text-gray-500">Pending</p>
-                <p className="mt-1 text-2xl font-semibold text-amber-600">{totals.pending}</p>
+                <p className="mt-1 text-2xl font-semibold text-amber-600">{stats.pending}</p>
                 <p className="mt-1 text-[11px] text-amber-600">Needs attention</p>
               </div>
               <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
                 <p className="text-xs font-medium text-gray-500">Cancelled</p>
-                <p className="mt-1 text-2xl font-semibold text-gray-400">{totals.cancelled}</p>
+                <p className="mt-1 text-2xl font-semibold text-gray-400">{stats.cancelled}</p>
                 <p className="mt-1 text-[11px] text-gray-500">Lost bookings</p>
               </div>
             </div>
@@ -439,14 +476,14 @@ export default function AdminBookingsPage() {
                                   onClick={() => setOpenDropdown(openDropdown === b.id ? null : b.id)}
                                   disabled={updatingStatus === b.id}
                                   className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium transition-all hover:opacity-80 ${b.bookingStatus === "confirmed"
-                                      ? "bg-emerald-50 text-emerald-700"
-                                      : b.bookingStatus === "pending"
-                                        ? "bg-amber-50 text-amber-700"
-                                        : b.bookingStatus === "checked_in"
-                                          ? "bg-blue-50 text-blue-700"
-                                          : b.bookingStatus === "checked_out"
-                                            ? "bg-gray-50 text-gray-700"
-                                            : "bg-rose-50 text-rose-700"
+                                    ? "bg-emerald-50 text-emerald-700"
+                                    : b.bookingStatus === "pending"
+                                      ? "bg-amber-50 text-amber-700"
+                                      : b.bookingStatus === "checked_in"
+                                        ? "bg-blue-50 text-blue-700"
+                                        : b.bookingStatus === "checked_out"
+                                          ? "bg-gray-50 text-gray-700"
+                                          : "bg-rose-50 text-rose-700"
                                     } ${updatingStatus === b.id ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                                 >
                                   {updatingStatus === b.id ? (
@@ -545,8 +582,8 @@ export default function AdminBookingsPage() {
                           onClick={() => setCurrentPage(pageNum)}
                           disabled={loading}
                           className={`h-8 w-8 rounded-lg text-xs font-medium transition-colors ${currentPage === pageNum
-                              ? "bg-blue-600 text-white"
-                              : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                            ? "bg-blue-600 text-white"
+                            : "border border-gray-200 text-gray-700 hover:bg-gray-50"
                             } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                           {pageNum}
