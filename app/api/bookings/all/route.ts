@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   console.log("📥 GET /api/bookings/all - Fetching all bookings");
-  
+
   try {
     // Authenticate admin
     const { user, error } = await authenticateAdmin(request);
@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
     const paymentStatus = searchParams.get("paymentStatus");
     const search = searchParams.get("search"); // Search by email or name
 
+    const expiringSoon = searchParams.get("expiringSoon") === "true";
+
     // Connect to database
     console.log("📡 Connecting to MongoDB...");
     await connectDB();
@@ -38,15 +40,29 @@ export async function GET(request: NextRequest) {
 
     // Build query
     const query: any = {};
-    
+
     if (status) {
       query.bookingStatus = status;
     }
-    
+
     if (paymentStatus) {
       query.paymentStatus = paymentStatus;
     }
-    
+
+    if (expiringSoon) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      query.checkOut = {
+        $gte: today,
+        $lt: tomorrow
+      };
+      // Only include active guests
+      query.bookingStatus = { $in: ["confirmed", "checked_in"] };
+    }
+
     if (search) {
       query.$or = [
         { guestEmail: { $regex: search, $options: "i" } },
@@ -98,7 +114,7 @@ export async function GET(request: NextRequest) {
     }));
 
     console.log("✅ Returning", formattedBookings.length, "formatted bookings");
-    
+
     return successResponse({
       bookings: formattedBookings,
       pagination: {
