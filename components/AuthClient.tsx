@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/sections/Header";
-import Image from "next/image";
+// import Image from "next/image";
+
+
 
 export function AuthClient() {
   const router = useRouter();

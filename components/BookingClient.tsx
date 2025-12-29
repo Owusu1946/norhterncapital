@@ -679,7 +679,6 @@ export function BookingClient() {
                     {[
                       { id: "card", name: "Credit/Debit Card", icon: "💳" },
                       { id: "mobile", name: "Mobile Money", icon: "📱" },
-                      { id: "bank", name: "Bank Transfer", icon: "🏦" }
                     ].map((method) => (
                       <div
                         key={method.id}
@@ -697,53 +696,7 @@ export function BookingClient() {
                   </div>
                 </div>
 
-                {paymentMethod === "card" && (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Card Number *</label>
-                      <input
-                        type="text"
-                        value={cardDetails.number}
-                        onChange={(e) => setCardDetails(prev => ({ ...prev, number: e.target.value }))}
-                        placeholder="1234 5678 9012 3456"
-                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date *</label>
-                      <input
-                        type="text"
-                        value={cardDetails.expiry}
-                        onChange={(e) => setCardDetails(prev => ({ ...prev, expiry: e.target.value }))}
-                        placeholder="MM/YY"
-                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">CVV *</label>
-                      <input
-                        type="text"
-                        value={cardDetails.cvv}
-                        onChange={(e) => setCardDetails(prev => ({ ...prev, cvv: e.target.value }))}
-                        placeholder="123"
-                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                        required
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Cardholder Name *</label>
-                      <input
-                        type="text"
-                        value={cardDetails.name}
-                        onChange={(e) => setCardDetails(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
+                {/* Card details form removed – Paystack handles card/mobile money UI */}
 
                 {paymentMethod === "mobile" && (
                   <div className="text-center py-8">

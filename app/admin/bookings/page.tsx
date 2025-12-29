@@ -128,7 +128,8 @@ export default function AdminBookingsPage() {
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
-  const filteredBookings = bookings; // Already filtered by API
+  // Never show bookings whose payment failed
+  const filteredBookings = bookings.filter((b) => b.paymentStatus !== "failed");
 
   const totals = useMemo(() => {
     const totalAmount = filteredBookings.reduce((sum, b) => sum + b.totalAmount, 0);

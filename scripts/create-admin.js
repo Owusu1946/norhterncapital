@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 const readline = require('readline');
 
 // MongoDB connection string
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/northerncapitalhotel';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://okenneth:Kwabenapwusu2255@northerncapital.leqnabr.mongodb.net/';
 
 // User Schema (same as in models/User.ts)
 const UserSchema = new mongoose.Schema({
@@ -65,7 +65,7 @@ async function createAdmin() {
   try {
     console.log('\n🔐 Northern Capital Hotel - Admin User Creator\n');
     console.log('━'.repeat(50));
-    
+
     // Connect to MongoDB
     console.log('\n📡 Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
@@ -100,7 +100,7 @@ async function createAdmin() {
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       console.log('\n❌ Error: A user with this email already exists.');
-      
+
       // Ask if they want to update the role
       const update = await question('\nUpdate existing user to admin/staff? (yes/no): ');
       if (update.toLowerCase() === 'yes' || update.toLowerCase() === 'y') {
@@ -109,13 +109,13 @@ async function createAdmin() {
         existingUser.lastName = lastName;
         if (phone) existingUser.phone = phone;
         if (country) existingUser.country = country;
-        
+
         // Update password if provided
         const salt = await bcrypt.genSalt(12);
         existingUser.password = await bcrypt.hash(password, salt);
-        
+
         await existingUser.save();
-        
+
         console.log('\n✅ User updated successfully!');
         console.log('\n📋 User Details:');
         console.log('━'.repeat(50));
@@ -124,7 +124,7 @@ async function createAdmin() {
         console.log(`Role:  ${existingUser.role}`);
         console.log('━'.repeat(50));
       }
-      
+
       await mongoose.disconnect();
       rl.close();
       process.exit(0);

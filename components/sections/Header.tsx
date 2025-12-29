@@ -15,6 +15,7 @@ export function Header({ variant = "default", className = "" }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const isHeroVariant = variant === "hero";
 
@@ -104,13 +105,30 @@ export function Header({ variant = "default", className = "" }: HeaderProps) {
 
       <div className="flex flex-1 items-center justify-end gap-6 pl-6">
         <div className={searchClasses}>
-          <span className={isHeroVariant ? "text-white/60" : "text-gray-400"}>
-            Search anything...
-          </span>
+          <Search className={isHeroVariant ? "h-4 w-4 text-white/60" : "h-4 w-4 text-gray-400"} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && searchQuery.trim()) {
+                router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+              }
+            }}
+            placeholder="Search anything..."
+            className={`flex-1 bg-transparent text-sm focus:outline-none ${
+              isHeroVariant ? "text-white placeholder:text-white/60" : "text-gray-700 placeholder:text-gray-400"
+            }`}
+          />
           <button
             type="button"
             className={searchButtonClasses}
             aria-label="Search"
+            onClick={() => {
+              if (searchQuery.trim()) {
+                router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+              }
+            }}
           >
             <Search className="h-4 w-4" />
           </button>
@@ -213,10 +231,17 @@ export function Header({ variant = "default", className = "" }: HeaderProps) {
 
           {/* Mobile Search */}
           <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-            <div className="flex items-center gap-3 text-sm text-gray-500">
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                router.push("/search");
+              }}
+              className="flex w-full items-center gap-3 text-sm text-gray-500 text-left"
+            >
               <Search className="h-4 w-4" />
               <span>Search anything...</span>
-            </div>
+            </button>
           </div>
 
           {/* Mobile Language Selector */}

@@ -314,9 +314,6 @@ export default function AddRoomPage() {
                             }`}>
                               {item.status === "occupied" ? "Booked" : item.status}
                             </span>
-                            <p className="text-[11px] text-gray-400">
-                              Floor {item.floor}
-                            </p>
                           </div>
                         </div>
                       );

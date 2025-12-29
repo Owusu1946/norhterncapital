@@ -9,6 +9,8 @@ interface CalendarBooking {
   checkIn: string;
   checkOut: string;
   totalGuests: number;
+  bookingStatus: string;
+  paymentStatus?: string;
 }
 
 function normalizeDate(d: Date) {
@@ -25,18 +27,51 @@ function isDateWithinStay(day: number, month: number, year: number, booking: Cal
   return target >= checkIn && target < checkOut;
 }
 
+// Build a real 6x7 calendar grid for the given month/year
+function buildCalendarGrid(year: number, month: number): Date[][] {
+  const firstOfMonth = new Date(year, month, 1);
+  const startDay = firstOfMonth.getDay(); // 0 (Sun) - 6 (Sat)
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // How many days from the previous month we need to show in the first week
+  const prevMonthDays = startDay;
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  const grid: Date[][] = [];
+  let currentDay = 1;
+  let nextMonthDay = 1;
+
+  for (let week = 0; week < 6; week++) {
+    const row: Date[] = [];
+    for (let weekday = 0; weekday < 7; weekday++) {
+      const cellIndex = week * 7 + weekday;
+      let cellDate: Date;
+
+      if (cellIndex < prevMonthDays) {
+        // Days from previous month
+        const dayNumber = daysInPrevMonth - prevMonthDays + 1 + cellIndex;
+        cellDate = new Date(year, month - 1, dayNumber);
+      } else if (currentDay <= daysInMonth) {
+        // Current month
+        cellDate = new Date(year, month, currentDay);
+        currentDay++;
+      } else {
+        // Next month
+        cellDate = new Date(year, month + 1, nextMonthDay);
+        nextMonthDay++;
+      }
+
+      cellDate = normalizeDate(cellDate);
+      row.push(cellDate);
+    }
+    grid.push(row);
+  }
+
+  return grid;
+}
+
 export function CalendarWidget() {
   const days = ["S", "M", "T", "W", "T", "F", "S"];
-
-  // September-style calendar grid (6x7) but we will treat 1–30 as current month days
-  const dates = [
-    [26, 27, 28, 29, 30, 31, 1],
-    [2, 3, 4, 5, 6, 7, 8],
-    [9, 10, 11, 12, 13, 14, 15],
-    [16, 17, 18, 19, 20, 21, 22],
-    [23, 24, 25, 26, 27, 28, 29],
-    [30, 1, 2, 3, 4, 5, 6],
-  ];
 
   const [bookings, setBookings] = useState<CalendarBooking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +79,12 @@ export function CalendarWidget() {
   const today = useMemo(() => normalizeDate(new Date()), []);
   const currentMonthIndex = today.getMonth();
   const currentYear = today.getFullYear();
-  const selectedDayNumber = today.getDate() <= 30 ? today.getDate() : 30; // keep within 1–30 grid
+  const selectedDayNumber = today.getDate();
+
+  const calendarGrid = useMemo(
+    () => buildCalendarGrid(currentYear, currentMonthIndex),
+    [currentYear, currentMonthIndex],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -73,6 +113,8 @@ export function CalendarWidget() {
           checkIn: b.checkIn,
           checkOut: b.checkOut,
           totalGuests: b.totalGuests ?? b.adults + (b.children || 0),
+          bookingStatus: b.bookingStatus,
+          paymentStatus: b.paymentStatus,
         }));
 
         if (isMounted) setBookings(mapped);
@@ -91,23 +133,34 @@ export function CalendarWidget() {
     };
   }, []);
 
+  // Consider only real active bookings when showing occupancy
+  const activeBookings = useMemo(
+    () =>
+      bookings.filter((b) =>
+        (b.bookingStatus === "confirmed" || b.bookingStatus === "checked_in") &&
+        b.paymentStatus !== "failed" &&
+        b.paymentStatus !== "refunded",
+      ),
+    [bookings],
+  );
+
   const occupiedRoomsToday = useMemo(() => {
     const rooms = new Set(
-      bookings
+      activeBookings
         .filter((b) =>
           isDateWithinStay(selectedDayNumber, currentMonthIndex, currentYear, b),
         )
         .map((b) => b.roomNumber || b.roomName),
     );
     return rooms.size;
-  }, [bookings, currentMonthIndex, currentYear, selectedDayNumber]);
+  }, [activeBookings, currentMonthIndex, currentYear, selectedDayNumber]);
 
   const bookingsForSelectedDay = useMemo(
     () =>
-      bookings.filter((b) =>
+      activeBookings.filter((b) =>
         isDateWithinStay(selectedDayNumber, currentMonthIndex, currentYear, b),
       ),
-    [bookings, currentMonthIndex, currentYear, selectedDayNumber],
+    [activeBookings, currentMonthIndex, currentYear, selectedDayNumber],
   );
 
   const monthLabel = useMemo(
@@ -127,43 +180,44 @@ export function CalendarWidget() {
     [today],
   );
 
-  const isCurrentMonth = (date: number) => date >= 1 && date <= 30;
+  const isCurrentMonth = (date: Date) =>
+    date.getFullYear() === currentYear && date.getMonth() === currentMonthIndex;
 
-  const isSelectedDay = (date: number, weekIndex: number) =>
-    isCurrentMonth(date) && date === selectedDayNumber;
+  const isSelectedDay = (date: Date, weekIndex: number) =>
+    isCurrentMonth(date) && date.getDate() === selectedDayNumber;
 
-  const isInStayRange = (date: number, weekIndex: number) => {
+  const isInStayRange = (date: Date, weekIndex: number) => {
     if (!isCurrentMonth(date)) return false;
-    return bookings.some((b) =>
-      isDateWithinStay(date, currentMonthIndex, currentYear, b),
+    return activeBookings.some((b) =>
+      isDateWithinStay(date.getDate(), currentMonthIndex, currentYear, b),
     );
   };
 
-  const isStayStart = (date: number, weekIndex: number) => {
+  const isStayStart = (date: Date, weekIndex: number) => {
     if (!isCurrentMonth(date)) return false;
-    return bookings.some((b) => {
+    return activeBookings.some((b) => {
       const checkIn = normalizeDate(new Date(b.checkIn));
       return (
         checkIn.getFullYear() === currentYear &&
         checkIn.getMonth() === currentMonthIndex &&
-        checkIn.getDate() === date
+        checkIn.getDate() === date.getDate()
       );
     });
   };
 
-  const isStayEnd = (date: number, weekIndex: number) => {
+  const isStayEnd = (date: Date, weekIndex: number) => {
     if (!isCurrentMonth(date)) return false;
-    return bookings.some((b) => {
+    return activeBookings.some((b) => {
       const checkOut = normalizeDate(new Date(b.checkOut));
       return (
         checkOut.getFullYear() === currentYear &&
         checkOut.getMonth() === currentMonthIndex &&
-        checkOut.getDate() === date
+        checkOut.getDate() === date.getDate()
       );
     });
   };
 
-  const getCellClasses = (date: number, weekIndex: number) => {
+  const getCellClasses = (date: Date, weekIndex: number) => {
     const base =
       "flex h-7 items-center justify-center text-[11px] cursor-pointer transition-colors";
 
@@ -219,13 +273,13 @@ export function CalendarWidget() {
 
           {/* Date grid */}
           <div className="grid grid-cols-7 gap-y-1">
-            {dates.map((week, weekIndex) =>
+            {calendarGrid.map((week, weekIndex) =>
               week.map((date, dateIndex) => (
                 <div
                   key={`${weekIndex}-${dateIndex}`}
                   className={getCellClasses(date, weekIndex)}
                 >
-                  {date}
+                  {date.getDate()}
                 </div>
               )),
             )}

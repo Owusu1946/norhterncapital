@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import {
   Bell,
@@ -23,6 +23,9 @@ export default function AdminSettingsPage() {
     hotelAddress: "123 Main Street, Accra, Ghana",
     currency: "GHS",
     timezone: "Africa/Accra",
+    website: "www.northerncapitalhotel.com",
+    taxNumber: "GH123456789",
+    receiptFooter: "Terms & Conditions Apply",
     
     // Booking
     checkInTime: "14:00",
@@ -49,10 +52,68 @@ export default function AdminSettingsPage() {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleSave() {
-    // In a real app, this would save to backend
-    alert("Settings saved successfully!");
+  async function handleSave() {
+    try {
+      const response = await fetch("/api/admin/settings/general", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          hotelName: settings.hotelName,
+          hotelEmail: settings.hotelEmail,
+          hotelPhone: settings.hotelPhone,
+          hotelAddress: settings.hotelAddress,
+          currency: settings.currency,
+          timezone: settings.timezone,
+          website: settings.website,
+          taxNumber: settings.taxNumber,
+          receiptFooter: settings.receiptFooter,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        alert(data.message || "Failed to save settings");
+        return;
+      }
+
+      alert("Settings saved successfully!");
+    } catch (error) {
+      console.error("Failed to save general settings:", error);
+      alert("Failed to save settings. Please try again.");
+    }
   }
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const response = await fetch("/api/admin/settings/general");
+        const data = await response.json();
+
+        if (data.success && data.data?.settings) {
+          const s = data.data.settings;
+          setSettings((prev) => ({
+            ...prev,
+            hotelName: s.hotelName,
+            hotelEmail: s.hotelEmail,
+            hotelPhone: s.hotelPhone,
+            hotelAddress: s.hotelAddress,
+            currency: s.currency,
+            timezone: s.timezone,
+            website: s.website || prev.website,
+            taxNumber: s.taxNumber || prev.taxNumber,
+            receiptFooter: s.receiptFooter || prev.receiptFooter,
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load general settings:", error);
+      }
+    }
+
+    loadSettings();
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -142,6 +203,39 @@ export default function AdminSettingsPage() {
                     type="text"
                     value={settings.hotelAddress}
                     onChange={(e) => handleChange("hotelAddress", e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">
+                    Website
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.website}
+                    onChange={(e) => handleChange("website", e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">
+                    Tax / VAT Number
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.taxNumber}
+                    onChange={(e) => handleChange("taxNumber", e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-gray-700">
+                    Receipt footer text
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.receiptFooter}
+                    onChange={(e) => handleChange("receiptFooter", e.target.value)}
                     className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none"
                   />
                 </div>

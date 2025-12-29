@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       roomImage,
       pricePerNight,
       numberOfRooms,
+      roomNumber,
       
       // Dates
       checkIn,
@@ -49,6 +50,11 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       paymentReference,
       paystackReference,
+
+      // Source & status (optional overrides)
+      bookingSource,
+      paymentStatus,
+      bookingStatus,
     } = body;
 
     // Validate required fields
@@ -110,6 +116,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const effectiveBookingSource = bookingSource || "website";
+
+    let finalPaymentStatus: "pending" | "paid" | "failed" | "refunded" = "pending";
+    let finalBookingStatus: "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled" = "pending";
+
+    if (paystackReference) {
+      // Online card payment via Paystack
+      finalPaymentStatus = "paid";
+      finalBookingStatus = "confirmed";
+    } else if (effectiveBookingSource === "walk_in") {
+      // Front desk / walk-in bookings can control status
+      finalPaymentStatus = (paymentStatus as any) || "paid";
+      finalBookingStatus = (bookingStatus as any) || "confirmed";
+    } else {
+      // Default website behaviour without Paystack reference
+      finalPaymentStatus = (paymentStatus as any) || "pending";
+      finalBookingStatus = (bookingStatus as any) || "pending";
+    }
+
     // Create booking document
     const booking = await Booking.create({
       // User
@@ -129,6 +154,7 @@ export async function POST(request: NextRequest) {
       roomImage: roomImage || "/hero.jpg",
       pricePerNight: Number(pricePerNight),
       numberOfRooms: Number(numberOfRooms) || 1,
+      roomNumber: roomNumber ? String(roomNumber).trim() : undefined,
       
       // Dates
       checkIn: checkInDate,
@@ -146,13 +172,13 @@ export async function POST(request: NextRequest) {
       // Payment
       totalAmount: Number(totalAmount),
       paymentMethod: paymentMethod || "card",
-      paymentStatus: paystackReference ? "paid" : "pending",
+      paymentStatus: finalPaymentStatus,
       paymentReference: paymentReference || undefined,
       paystackReference: paystackReference || undefined,
       
       // Status
-      bookingStatus: paystackReference ? "confirmed" : "pending",
-      bookingSource: "website",
+      bookingStatus: finalBookingStatus,
+      bookingSource: effectiveBookingSource,
     });
 
     // Prepare response data

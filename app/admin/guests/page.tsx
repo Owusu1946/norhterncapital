@@ -113,9 +113,10 @@ export default function GuestsPage() {
     return () => clearInterval(interval);
   }, [fetchGuests]);
 
-  const filteredGuests = guests;
+  // Never show guests for bookings whose payment failed
+  const filteredGuests = guests.filter((guest) => guest.paymentStatus !== "failed");
 
-  const counts = guests.reduce(
+  const counts = filteredGuests.reduce(
     (acc, guest) => {
       acc.total += 1;
       acc[guest.status] += 1;

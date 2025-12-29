@@ -183,20 +183,39 @@ export function generateGuestsReport(guests: any[], format: "csv" | "excel") {
     "Status",
   ];
 
-  const rows = guests.map((g) => [
-    g.id,
-    g.fullName,
-    g.roomNumber,
-    g.roomTypeSlug,
-    g.channel,
-    g.checkIn,
-    g.checkOut,
-    g.adults,
-    g.children,
-    g.amountDue,
-    g.amountPaid,
-    g.status,
-  ]);
+  const rows = guests.map((g) => {
+    const amountDue = Number(
+      g.totalAmount ?? g.amountDue ?? 0
+    );
+
+    const amountPaid = Number(
+      g.amountPaid ?? (g.paymentStatus === "paid" ? g.totalAmount : 0) ?? 0
+    );
+
+    const channel =
+      g.bookingSource === "website"
+        ? "Online booking"
+        : g.bookingSource === "walk_in"
+        ? "Walk-in"
+        : g.bookingSource || g.channel || "";
+
+    const status = g.paymentStatus || g.status || "";
+
+    return [
+      g.id,
+      g.fullName,
+      g.roomNumber,
+      g.roomName || g.roomTypeSlug || "",
+      channel,
+      g.checkIn,
+      g.checkOut,
+      g.adults,
+      g.children,
+      amountDue,
+      amountPaid,
+      status,
+    ];
+  });
 
   const timestamp = new Date().toISOString().split("T")[0];
 

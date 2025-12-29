@@ -14,14 +14,15 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   console.log("🏨 GET /api/room-types - Fetching all room types");
-  
+
   try {
     // Connect to database
     await connectDB();
 
     // Get all room types with populated services
+    // Explicitly pass Service model to ensure it's used and registered
     const roomTypes = await RoomType.find({ isActive: true })
-      .populate('services')
+      .populate({ path: 'services', model: Service })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
           roomTypeId: roomType._id,
           isActive: true,
         });
-        
+
         const availableRoomCount = await Room.countDocuments({
           roomTypeId: roomType._id,
           status: "available",
@@ -68,7 +69,8 @@ export async function GET(request: NextRequest) {
     return successResponse({ roomTypes: roomTypesWithCount });
   } catch (error: any) {
     console.error("❌ Get room types error:", error);
-    return errorResponse("Failed to fetch room types", 500);
+    // Return actual error message for debugging (revert this before final prod if sensitive)
+    return errorResponse(`Failed to fetch room types: ${error.message}`, 500);
   }
 }
 
@@ -78,7 +80,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   console.log("🏨 POST /api/room-types - Creating new room type");
-  
+
   try {
     // Authenticate admin
     const { user, error } = await authenticateAdmin(request);
@@ -194,11 +196,11 @@ export async function POST(request: NextRequest) {
     return successResponse({ roomType: roomTypeData }, "Room type created successfully", 201);
   } catch (error: any) {
     console.error("❌ Create room type error:", error);
-    
+
     if (error.code === 11000) {
       return errorResponse("A room type with this slug already exists", 400);
     }
-    
+
     return errorResponse("Failed to create room type", 500);
   }
 }

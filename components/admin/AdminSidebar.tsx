@@ -46,6 +46,7 @@ const navItems = [
     label: "Rooms",
     href: "/admin/rooms",
     subItems: [
+      { label: "All rooms", icon: BedDouble, href: "/admin/rooms" },
       { label: "Room type", icon: ListChecks, href: "/admin/rooms/add-room-type" },
       { label: "Add room", icon: PlusCircle, href: "/admin/rooms/add-room" },
       { label: "Services", icon: ShoppingBag, href: "/admin/rooms/services" },
@@ -91,7 +92,7 @@ export function AdminSidebar() {
   const [expanded, setExpanded] = useState(true);
   const [roomsOpen, setRoomsOpen] = useState(false);
   const [restaurantOpen, setRestaurantOpen] = useState(false);
-  const [bookingsCount] = useState(12);
+  const [bookingsCount, setBookingsCount] = useState(0);
   const [allowedMenus, setAllowedMenus] = useState<string[]>([]);
   const [userRole, setUserRole] = useState<string>("admin");
   const [loading, setLoading] = useState(true);
@@ -186,6 +187,55 @@ export function AdminSidebar() {
     }
 
     fetchUserData();
+  }, []);
+
+  // Fetch upcoming bookings count for sidebar badge
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchUpcomingBookingsCount() {
+      try {
+        const response = await fetch("/api/bookings/all?limit=200", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          if (isMounted) setBookingsCount(0);
+          return;
+        }
+
+        const json = await response.json();
+        const bookings: any[] = json?.data?.bookings || [];
+
+        if (!Array.isArray(bookings)) {
+          if (isMounted) setBookingsCount(0);
+          return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const upcoming = bookings.filter((b) => {
+          if (b.paymentStatus === "failed") return false;
+          if (b.bookingStatus !== "pending" && b.bookingStatus !== "confirmed") return false;
+          if (!b.checkIn) return false;
+          const checkIn = new Date(b.checkIn);
+          checkIn.setHours(0, 0, 0, 0);
+          return checkIn >= today;
+        }).length;
+
+        if (isMounted) setBookingsCount(upcoming);
+      } catch (error) {
+        console.error("Failed to fetch upcoming bookings count:", error);
+        if (isMounted) setBookingsCount(0);
+      }
+    }
+
+    fetchUpcomingBookingsCount();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (

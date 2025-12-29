@@ -101,6 +101,15 @@ export default function NewGuestPage() {
   const [createdGuests, setCreatedGuests] = useState<CreatedGuest[]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
+  const [generalSettings, setGeneralSettings] = useState<{
+    hotelName: string;
+    hotelAddress: string;
+    hotelPhone: string;
+    website?: string;
+    taxNumber?: string;
+    receiptFooter?: string;
+  } | null>(null);
+
   const selectedType = roomTypes.find((room) => room.slug === roomTypeSlug);
 
   const nightsForSummary = calculateNights(checkIn, checkOut);
@@ -119,6 +128,7 @@ export default function NewGuestPage() {
   // Fetch room types on mount
   useEffect(() => {
     fetchRoomTypes();
+    fetchGeneralSettings();
   }, []);
 
   // Fetch available rooms when room type changes
@@ -141,6 +151,27 @@ export default function NewGuestPage() {
     } catch (error) {
       console.error('Failed to fetch room types:', error);
       toast.error('Failed to load room types');
+    }
+  }
+
+  async function fetchGeneralSettings() {
+    try {
+      const response = await fetch('/api/admin/settings/general');
+      const data = await response.json();
+
+      if (data.success && data.data?.settings) {
+        const s = data.data.settings;
+        setGeneralSettings({
+          hotelName: s.hotelName,
+          hotelAddress: s.hotelAddress,
+          hotelPhone: s.hotelPhone,
+          website: s.website,
+          taxNumber: s.taxNumber,
+          receiptFooter: s.receiptFooter,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load general settings:', error);
     }
   }
 
@@ -172,6 +203,14 @@ export default function NewGuestPage() {
 
     if (!roomTypeSlug || !trimmedRoomNumber || !fullName) {
       toast.error("Please fill in guest name, room type and room number.");
+      return;
+    }
+
+    const selectedRoom = availableRooms.find(
+      (r) => r.roomNumber === trimmedRoomNumber
+    );
+    if (!selectedRoom) {
+      toast.error("Please select a valid room from the list.");
       return;
     }
 
@@ -225,8 +264,9 @@ export default function NewGuestPage() {
           // Payment
           totalAmount: amountDue,
           paymentMethod: paymentMethod,
-          paymentStatus: amountPaid >= amountDue ? 'paid' : 'pending',
-          bookingStatus: amountPaid >= amountDue ? 'confirmed' : 'pending',
+          // For front-desk walk-in bookings we treat as confirmed & paid
+          paymentStatus: 'paid',
+          bookingStatus: 'confirmed',
           bookingSource: 'walk_in',
         }),
       });
@@ -368,12 +408,11 @@ export default function NewGuestPage() {
     <div class="receipt">
       <!-- Header -->
       <div class="header">
-        <div class="logo">NORTHERN CAPITAL HOTEL</div>
+        <div class="logo">${generalSettings?.hotelName || "NORTHERN CAPITAL HOTEL"}</div>
         <div class="subtitle">★ ★ ★ ★ ★</div>
         <div class="subtitle" style="margin-top: 2mm;">
-          123 Independence Avenue<br>
-          Tamale, Northern Region<br>
-          Tel: +233 XX XXX XXXX
+          ${generalSettings?.hotelAddress || "123 Independence Avenue, Tamale, Northern Region"}<br>
+          Tel: ${generalSettings?.hotelPhone || "+233 XX XXX XXXX"}
         </div>
       </div>
       
@@ -505,10 +544,10 @@ export default function NewGuestPage() {
       <!-- Footer -->
       <div class="footer">
         <div style="margin-bottom: 2mm; font-weight: bold;">Thank You for Choosing</div>
-        <div>NORTHERN CAPITAL HOTEL</div>
-        <div style="margin-top: 2mm;">www.northerncapitalhotel.com</div>
-        <div style="margin-top: 3mm; font-size: 8px;">GST/VAT Reg: GH123456789</div>
-        <div style="margin-top: 1mm; font-size: 8px;">Terms & Conditions Apply</div>
+        <div>${generalSettings?.hotelName || "NORTHERN CAPITAL HOTEL"}</div>
+        <div style="margin-top: 2mm;">${generalSettings?.website || "www.northerncapitalhotel.com"}</div>
+        <div style="margin-top: 3mm; font-size: 8px;">GST/VAT Reg: ${generalSettings?.taxNumber || "GH123456789"}</div>
+        <div style="margin-top: 1mm; font-size: 8px;">${generalSettings?.receiptFooter || "Terms & Conditions Apply"}</div>
       </div>
       
       <!-- Cut Line -->
@@ -587,7 +626,7 @@ export default function NewGuestPage() {
                           <option value="">Select a room</option>
                           {availableRooms.map((room) => (
                             <option key={room.id} value={room.roomNumber}>
-                              Room {room.roomNumber} (Floor {room.floor})
+                              Room {room.roomNumber}
                             </option>
                           ))}
                         </select>
