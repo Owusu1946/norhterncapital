@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { Room } from "../../../lib/rooms";
 import { RoomDetailsClient } from "../../../components/RoomDetailsClient";
 import { Header } from "../../../components/sections/Header";
+import connectDB from "@/lib/mongodb";
+import RoomTypeModel from "@/models/RoomType";
 
 interface RoomPageProps {
   params: Promise<{
@@ -10,23 +12,45 @@ interface RoomPageProps {
   }>;
 }
 
+// Force dynamic rendering to ensure fresh data
+export const dynamic = "force-dynamic";
+
 async function getRoomType(slug: string): Promise<Room | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/public/room-types/${slug}`, {
-      cache: 'no-store'
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success && data.data.roomType) {
-        return data.data.roomType;
-      }
+    await connectDB();
+
+    // Find room type by slug directly from DB
+    const roomType = await RoomTypeModel.findOne({
+      slug: slug.toLowerCase(),
+      isActive: true
+    }).lean();
+
+    if (!roomType) {
+      console.log(`Room type not found for slug: ${slug}`);
+      return null;
     }
+
+    // Map DB model to UI model
+    return {
+      slug: roomType.slug,
+      name: roomType.name,
+      description: roomType.description || "",
+      longDescription: roomType.longDescription || "",
+      priceFrom: roomType.pricePerNight,
+      size: roomType.size || "",
+      image: roomType.mainImage || "/hero.jpg",
+      gallery: roomType.gallery && roomType.gallery.length > 0
+        ? roomType.gallery
+        : ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+      perks: roomType.perks || [],
+      amenities: roomType.amenities || [],
+      bedType: roomType.bedType || "",
+      maxGuests: roomType.maxGuests || 2,
+    };
   } catch (error) {
     console.error("Error fetching room type:", error);
+    return null;
   }
-  
-  return null;
 }
 
 export default async function RoomPage({ params }: RoomPageProps) {
