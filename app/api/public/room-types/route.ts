@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
       priceFrom: roomType.pricePerNight,
       size: roomType.size || "",
       image: roomType.mainImage && roomType.mainImage.trim() !== "" ? roomType.mainImage : "/hero.jpg",
-      gallery: roomType.gallery && roomType.gallery.length > 0 && roomType.gallery[0] !== ""
-        ? roomType.gallery
+      gallery: roomType.gallery && roomType.gallery.some(url => url && url.trim() !== "")
+        ? roomType.gallery.filter(url => url && url.trim() !== "")
         : ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
       perks: roomType.perks || [],
       amenities: roomType.amenities || [],
