@@ -10,6 +10,7 @@ import { NewGuestsCard } from "@/components/admin/NewGuestsCard";
 import { GuestsList } from "@/components/admin/GuestsList";
 import { CalendarWidget } from "@/components/admin/CalendarWidget";
 import { ActivityLog } from "@/components/admin/ActivityLog";
+import { AiChatWidget } from "@/components/admin/AiChatWidget";
 
 export default function AdminDashboard() {
   const [selectedView, setSelectedView] = useState("Overview");
@@ -22,7 +23,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <DashboardHeader 
+        <DashboardHeader
           selectedView={selectedView}
           onViewChange={setSelectedView}
         />
@@ -61,6 +62,9 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* AI Chat Widget */}
+      <AiChatWidget />
     </div>
   );
 }
