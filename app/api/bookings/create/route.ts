@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       guestPhone,
       guestCountry,
       specialRequests,
-      
+
       // Room details
       roomSlug,
       roomName,
@@ -31,20 +31,20 @@ export async function POST(request: NextRequest) {
       pricePerNight,
       numberOfRooms,
       roomNumber,
-      
+
       // Dates
       checkIn,
       checkOut,
       nights,
-      
+
       // Guests
       adults,
       children,
       totalGuests,
-      
+
       // Services
       additionalServices,
-      
+
       // Payment
       totalAmount,
       paymentMethod,
@@ -78,11 +78,11 @@ export async function POST(request: NextRequest) {
     // Validate dates
     let checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
-    
+
     // Get today's date at midnight for comparison (allow same-day bookings)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     // Set check-in date to midnight for fair comparison
     const checkInDateOnly = new Date(checkInDate);
     checkInDateOnly.setHours(0, 0, 0, 0);
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     const booking = await Booking.create({
       // User
       userId: userId || undefined,
-      
+
       // Guest details
       guestEmail: guestEmail.toLowerCase(),
       guestFirstName,
@@ -147,35 +147,35 @@ export async function POST(request: NextRequest) {
       guestPhone,
       guestCountry,
       specialRequests: specialRequests || undefined,
-      
+
       // Room details
       roomSlug,
       roomName,
-      roomImage: roomImage || "/hero.jpg",
+      roomImage: roomImage || "/hotel-images/4.JPG",
       pricePerNight: Number(pricePerNight),
       numberOfRooms: Number(numberOfRooms) || 1,
       roomNumber: roomNumber ? String(roomNumber).trim() : undefined,
-      
+
       // Dates
       checkIn: checkInDate,
       checkOut: checkOutDate,
       nights: Number(nights),
-      
+
       // Guests
       adults: Number(adults),
       children: Number(children) || 0,
       totalGuests: Number(totalGuests) || Number(adults),
-      
+
       // Services
       additionalServices: additionalServices || [],
-      
+
       // Payment
       totalAmount: Number(totalAmount),
       paymentMethod: paymentMethod || "card",
       paymentStatus: finalPaymentStatus,
       paymentReference: paymentReference || undefined,
       paystackReference: paystackReference || undefined,
-      
+
       // Status
       bookingStatus: finalBookingStatus,
       bookingSource: effectiveBookingSource,

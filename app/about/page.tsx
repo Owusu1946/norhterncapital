@@ -12,7 +12,7 @@ export default function AboutPage() {
         {/* Hero Section */}
         <section className="relative h-[400px] overflow-hidden">
           <Image
-            src="/hero.jpg"
+            src="/hotel-images/IMG_3725.PNG"
             alt="Northern Capital Hotel"
             fill
             className="object-cover"
@@ -63,7 +63,7 @@ export default function AboutPage() {
                   <div className="space-y-4">
                     <div className="relative h-48 overflow-hidden rounded-3xl border border-black/5 shadow-sm">
                       <Image
-                        src="/hero.jpg"
+                        src="/hotel-images/18.JPG"
                         alt="Hotel exterior"
                         fill
                         className="object-cover"
@@ -71,7 +71,7 @@ export default function AboutPage() {
                     </div>
                     <div className="relative h-64 overflow-hidden rounded-3xl border border-black/5 shadow-sm">
                       <Image
-                        src="/hero.jpg"
+                        src="/hotel-images/3.JPG"
                         alt="Hotel room"
                         fill
                         className="object-cover"
@@ -81,7 +81,7 @@ export default function AboutPage() {
                   <div className="space-y-4 pt-8">
                     <div className="relative h-64 overflow-hidden rounded-3xl border border-black/5 shadow-sm">
                       <Image
-                        src="/hero.jpg"
+                        src="/hotel-images/21.JPG"
                         alt="Hotel lounge"
                         fill
                         className="object-cover"
@@ -89,7 +89,7 @@ export default function AboutPage() {
                     </div>
                     <div className="relative h-48 overflow-hidden rounded-3xl border border-black/5 shadow-sm">
                       <Image
-                        src="/hero.jpg"
+                        src="/hotel-images/14.JPG"
                         alt="Hotel dining"
                         fill
                         className="object-cover"
@@ -207,7 +207,7 @@ export default function AboutPage() {
 
               <div className="relative h-[400px] overflow-hidden rounded-3xl border border-black/5 shadow-lg">
                 <Image
-                  src="/hero.jpg"
+                  src="/hotel-images/15.JPG"
                   alt="Hotel location"
                   fill
                   className="object-cover"

@@ -2,15 +2,15 @@
 
 import Image from "next/image";
 import { Header } from "@/components/sections/Header";
-import { 
-  Wifi, 
-  Car, 
-  Coffee, 
-  Utensils, 
-  Dumbbell, 
-  Waves, 
-  Sparkles, 
-  Users, 
+import {
+  Wifi,
+  Car,
+  Coffee,
+  Utensils,
+  Dumbbell,
+  Waves,
+  Sparkles,
+  Users,
   ShieldCheck,
   Clock,
   Wind,
@@ -80,22 +80,22 @@ const amenitiesCategories = [
 
 const featuredAmenities = [
   {
-    image: "/hero.jpg",
+    image: "/hotel-images/23.JPG",
     title: "Swimming Pool",
     description: "Relax by our outdoor pool with comfortable loungers and refreshing drinks from our poolside bar."
   },
   {
-    image: "/hero.jpg",
+    image: "/hotel-images/3.JPG",
     title: "Restaurant",
     description: "Experience authentic Ghanaian cuisine alongside international favorites in our elegant dining space."
   },
   {
-    image: "/hero.jpg",
+    image: "/hotel-images/25.JPG",
     title: "Spa & Wellness",
     description: "Indulge in rejuvenating treatments and massages in our tranquil spa environment."
   },
   {
-    image: "/hero.jpg",
+    image: "/hotel-images/14.JPG",
     title: "Conference Facilities",
     description: "Host successful meetings and events in our modern, fully-equipped conference rooms."
   }
@@ -109,7 +109,7 @@ export default function AmenitiesPage() {
         {/* Hero Section */}
         <section className="relative h-[400px] overflow-hidden">
           <Image
-            src="/hero.jpg"
+            src="/hotel-images/IMG_3725.PNG"
             alt="Hotel Amenities"
             fill
             className="object-cover"

@@ -242,25 +242,25 @@ export default function NewGuestPage() {
           guestPhone: phone.trim() || 'Walk-in Guest',
           guestCountry: country,
           specialRequests: specialRequests,
-          
+
           // Room details
           roomSlug: roomTypeSlug,
           roomName: selectedType?.name || '',
-          roomImage: selectedType?.mainImage || '/hero.jpg',
+          roomImage: selectedType?.mainImage || '/hotel-images/4.JPG',
           pricePerNight: selectedType?.pricePerNight || 0,
           numberOfRooms: 1,
           roomNumber: trimmedRoomNumber,
-          
+
           // Dates
           checkIn,
           checkOut,
           nights,
-          
+
           // Guests
           adults: Number(adults || 1),
           children: Number(children || 0),
           totalGuests: Number(adults || 1) + Number(children || 0),
-          
+
           // Payment
           totalAmount: amountDue,
           paymentMethod: paymentMethod,
@@ -275,7 +275,7 @@ export default function NewGuestPage() {
 
       if (data.success) {
         const booking = data.data.booking;
-        
+
         // Mark room as occupied if payment is complete
         if (amountPaid >= amountDue) {
           await updateRoomStatus(trimmedRoomNumber, 'occupied');
@@ -304,7 +304,7 @@ export default function NewGuestPage() {
 
         setCreatedGuests((prev) => [newGuest, ...prev]);
         toast.success('Guest booking created successfully!');
-        
+
         // Reset form
         setFirstName('');
         setLastName('');
@@ -312,7 +312,7 @@ export default function NewGuestPage() {
         setPhone('');
         setAmountPaidInput('');
         setSpecialRequests('');
-        
+
         // Refresh available rooms
         fetchAvailableRooms(roomTypeSlug);
       } else {
@@ -355,12 +355,12 @@ export default function NewGuestPage() {
       guest.paymentMethod === "cash"
         ? "Cash"
         : guest.paymentMethod === "card"
-        ? "Card"
-        : guest.paymentMethod === "mobile_money"
-        ? "Mobile money"
-        : guest.paymentMethod === "bank_transfer"
-        ? "Bank transfer"
-        : guest.paymentMethod;
+          ? "Card"
+          : guest.paymentMethod === "mobile_money"
+            ? "Mobile money"
+            : guest.paymentMethod === "bank_transfer"
+              ? "Bank transfer"
+              : guest.paymentMethod;
 
     const checkInLabel = formatDateLabel(guest.checkIn);
     const checkOutLabel = formatDateLabel(guest.checkOut);
@@ -483,7 +483,7 @@ export default function NewGuestPage() {
         <div class="section-title">Payment Summary</div>
         <div class="row">
           <span class="label">Room Rate:</span>
-          <span class="value">₵${(amountDue/nights).toFixed(2)}</span>
+          <span class="value">₵${(amountDue / nights).toFixed(2)}</span>
         </div>
         <div class="row">
           <span class="label">× ${nights} Night${nights > 1 ? 's' : ''}:</span>
@@ -792,11 +792,10 @@ export default function NewGuestPage() {
                                 key={method.id}
                                 type="button"
                                 onClick={() => setPaymentMethod(method.id)}
-                                className={`rounded-full border px-2 py-1 text-[11px] font-medium transition-colors ${
-                                  paymentMethod === method.id
+                                className={`rounded-full border px-2 py-1 text-[11px] font-medium transition-colors ${paymentMethod === method.id
                                     ? "border-blue-500 bg-blue-50 text-blue-700"
                                     : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                                }`}
+                                  }`}
                               >
                                 {method.label}
                               </button>
@@ -933,7 +932,7 @@ export default function NewGuestPage() {
                                 <p className="mt-0.5 text-[10px] text-gray-500">
                                   Paid ₵{guest.amountPaid.toLocaleString()} · Change ₵
                                   {guest.change.toLocaleString()}
-                              </p>
+                                </p>
                               )}
                               <button
                                 type="button"

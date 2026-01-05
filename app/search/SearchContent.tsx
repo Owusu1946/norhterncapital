@@ -111,7 +111,7 @@ export default function SearchContent() {
                             >
                                 <div className="relative h-40 w-full overflow-hidden">
                                     <Image
-                                        src={room.mainImage || "/hero.jpg"}
+                                        src={room.mainImage || "/hotel-images/4.JPG"}
                                         alt={room.name}
                                         fill
                                         className="object-cover transition-transform duration-300 group-hover:scale-105"

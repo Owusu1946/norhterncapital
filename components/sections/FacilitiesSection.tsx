@@ -6,19 +6,19 @@ const facilities = [
   {
     name: "Airport Shuttle",
     description: "Seamless transfers between Northern Capital Hotel and Tamale International Airport.",
-    image: "/hero.jpg",
+    image: "/hotel-images/19.JPG",
     tag: "Arrival",
   },
   {
     name: "Meeting & Event Spaces",
     description: "Elegant rooms for strategy sessions, retreats, and intimate celebrations.",
-    image: "/hero.jpg",
+    image: "/hotel-images/23.JPG",
     tag: "Business",
   },
   {
     name: "Spa & Wellness Center",
     description: "Quiet treatment rooms designed for deep rest and reset.",
-    image: "/hero.jpg",
+    image: "/hotel-images/34.JPG",
     tag: "Wellness",
   },
 ];

@@ -11,17 +11,17 @@ import {
 
 const heroSlides = [
   {
-    image: "/hero.jpg",
+    image: "/hotel-images/42.JPG",
     alt: "Northern Capital Hotel suite with warm lighting",
     label: "Signature stays",
   },
   {
-    image: "/hero.jpg",
+    image: "/hotel-images/18.JPG",
     alt: "Lounge space at Northern Capital Hotel",
     label: "Evening lounge",
   },
   {
-    image: "/hero.jpg",
+    image: "/hotel-images/19.JPG",
     alt: "Dining and social area at Northern Capital Hotel",
     label: "Social corners",
   },
@@ -131,9 +131,8 @@ function HeroBackdrop() {
       {heroSlides.map((slide, index) => (
         <div
           key={slide.label + index}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-out ${
-            index === activeIndex ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-out ${index === activeIndex ? "opacity-100" : "opacity-0"
+            }`}
         >
           <Image
             src={slide.image}
@@ -186,11 +185,10 @@ function HeroBackdrop() {
               key={index}
               type="button"
               onClick={() => goTo(index)}
-              className={`h-1.5 rounded-full transition-all ${
-                index === activeIndex
-                  ? "w-6 bg-[#01a4ff]"
-                  : "w-1.5 bg-white/50 hover:bg-white"
-              }`}
+              className={`h-1.5 rounded-full transition-all ${index === activeIndex
+                ? "w-6 bg-[#01a4ff]"
+                : "w-1.5 bg-white/50 hover:bg-white"
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}

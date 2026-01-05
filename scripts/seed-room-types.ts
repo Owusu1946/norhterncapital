@@ -24,8 +24,8 @@ const roomTypes = [
       "Mini bar",
     ],
     perks: ["City view", "King bed", "Breakfast included"],
-    mainImage: "/hero.jpg",
-    gallery: ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+    mainImage: "/hotel-images/1.JPG",
+    gallery: ["/hotel-images/5.JPG", "/hotel-images/31.JPG", "/hotel-images/32.JPG"],
     isActive: true,
   },
   {
@@ -49,8 +49,8 @@ const roomTypes = [
       "Air conditioning",
     ],
     perks: ["Work desk", "Rain shower", "High-speed Wi-Fi"],
-    mainImage: "/hero.jpg",
-    gallery: ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+    mainImage: "/hotel-images/3.JPG",
+    gallery: ["/hotel-images/10.JPG", "/hotel-images/11.JPG", "/hotel-images/12.JPG"],
     isActive: true,
   },
   {
@@ -74,8 +74,8 @@ const roomTypes = [
       "Tea and coffee set-up",
     ],
     perks: ["Sofa bed", "Kids-friendly", "Late checkout"],
-    mainImage: "/hero.jpg",
-    gallery: ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+    mainImage: "/hotel-images/4.JPG",
+    gallery: ["/hotel-images/20.JPG", "/hotel-images/21.JPG", "/hotel-images/22.JPG"],
     isActive: true,
   },
 ];
@@ -83,7 +83,7 @@ const roomTypes = [
 async function seedRoomTypes() {
   try {
     console.log("🌱 Starting room types seeding...");
-    
+
     // Connect to MongoDB
     await connectDB();
     console.log("✅ Connected to MongoDB");

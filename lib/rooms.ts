@@ -23,8 +23,8 @@ export const rooms: Room[] = [
       "Our Signature Suite is designed for guests who want generous space, quiet luxury, and a calm place to unwind after a day in Tamale and Savelugu.",
     priceFrom: 320,
     size: "52 m²",
-    image: "/hero.jpg",
-    gallery: ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+    image: "/hotel-images/1.JPG",
+    gallery: ["/hotel-images/5.JPG", "/hotel-images/31.JPG", "/hotel-images/32.JPG"],
     perks: ["City view", "King bed", "Breakfast included"],
     amenities: [
       "Separate lounge area",
@@ -47,8 +47,8 @@ export const rooms: Room[] = [
       "Thoughtfully designed for business travellers and city explorers, our Deluxe Room balances comfort with functionality.",
     priceFrom: 210,
     size: "32 m²",
-    image: "/hero.jpg",
-    gallery: ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+    image: "/hotel-images/3.JPG",
+    gallery: ["/hotel-images/10.JPG", "/hotel-images/11.JPG", "/hotel-images/12.JPG"],
     perks: ["Work desk", "Rain shower", "High-speed Wi-Fi"],
     amenities: [
       "Dedicated work desk",
@@ -70,8 +70,8 @@ export const rooms: Room[] = [
       "Ideal for small families and close groups, our Family Room offers flexible bedding and extra space so everyone can settle in comfortably.",
     priceFrom: 260,
     size: "40 m²",
-    image: "/hero.jpg",
-    gallery: ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+    image: "/hotel-images/4.JPG",
+    gallery: ["/hotel-images/20.JPG", "/hotel-images/21.JPG", "/hotel-images/22.JPG"],
     perks: ["Sofa bed", "Kids-friendly", "Late checkout"],
     amenities: [
       "Sofa bed",

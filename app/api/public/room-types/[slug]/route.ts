@@ -39,10 +39,10 @@ export async function GET(
       longDescription: roomType.longDescription || "",
       priceFrom: roomType.pricePerNight,
       size: roomType.size || "",
-      image: roomType.mainImage || "/hero.jpg",
-      gallery: roomType.gallery && roomType.gallery.length > 0 
-        ? roomType.gallery 
-        : ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+      image: roomType.mainImage || "/hotel-images/4.JPG",
+      gallery: roomType.gallery && roomType.gallery.length > 0
+        ? roomType.gallery
+        : ["/hotel-images/4.JPG", "/hotel-images/4.JPG", "/hotel-images/4.JPG"],
       perks: roomType.perks || [],
       amenities: roomType.amenities || [],
       bedType: roomType.bedType || "",

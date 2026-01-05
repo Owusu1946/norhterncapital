@@ -7,21 +7,21 @@ const diningHighlights = [
     name: "Northern Capital Restaurant",
     description:
       "All-day dining with a calm atmosphere, serving contemporary Ghanaian and international dishes.",
-    image: "/hero.jpg",
+    image: "/hotel-images/24.JPG",
     tag: "All Day",
   },
   {
     name: "Morning Buffet",
     description:
       "A generous breakfast spread with fresh fruits, warm pastries, and made-to-order favourites.",
-    image: "/hero.jpg",
+    image: "/hotel-images/3.JPG",
     tag: "Breakfast",
   },
   {
     name: "On the Rocks Bar",
     description:
       "An intimate bar with cocktails, chilled drinks, and light bites into the evening.",
-    image: "/hero.jpg",
+    image: "/hotel-images/IMG_3725.PNG",
     tag: "Evening",
   },
 ];

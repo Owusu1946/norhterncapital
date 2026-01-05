@@ -33,7 +33,7 @@ export function BookingClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  
+
   const [bookingData, setBookingData] = useState<BookingData>({});
   const [availableServices, setAvailableServices] = useState<Service[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -73,7 +73,7 @@ export function BookingClient() {
     const data: BookingData = {
       roomSlug: searchParams.get("roomSlug") || undefined,
       roomName: searchParams.get("roomName") || undefined,
-      roomImage: searchParams.get("roomImage") || "/hero.jpg",
+      roomImage: searchParams.get("roomImage") || "/hotel-images/4.JPG",
       checkIn: searchParams.get("checkIn") || undefined,
       checkOut: searchParams.get("checkOut") || undefined,
       adults,
@@ -101,7 +101,7 @@ export function BookingClient() {
           const roomType = roomTypesData.data.roomTypes.find(
             (rt: any) => rt.slug === roomSlug
           );
-          
+
           if (roomType && roomType.services) {
             // roomType.services contains the populated service objects
             setAvailableServices(roomType.services);
@@ -146,8 +146,8 @@ export function BookingClient() {
   };
 
   const handleServiceToggle = (serviceId: string) => {
-    setSelectedServices(prev => 
-      prev.includes(serviceId) 
+    setSelectedServices(prev =>
+      prev.includes(serviceId)
         ? prev.filter(id => id !== serviceId)
         : [...prev, serviceId]
     );
@@ -159,20 +159,20 @@ export function BookingClient() {
       setShowAuthModal(true);
       return;
     }
-    
+
     // Scroll to top for better UX
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
-    
+
     setCurrentStep(nextStep);
   };
 
   const handlePayment = async () => {
     setIsProcessing(true);
     let bookingId: string | null = null;
-    
+
     try {
       // Validate required fields before sending
       if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email || !guestDetails.phone || !guestDetails.country) {
@@ -203,30 +203,30 @@ export function BookingClient() {
         guestPhone: guestDetails.phone,
         guestCountry: guestDetails.country,
         specialRequests: guestDetails.specialRequests || '',
-        
+
         // Room details
         roomSlug: bookingData.roomSlug || 'standard-room',
         roomName: bookingData.roomName || 'Standard Room',
-        roomImage: bookingData.roomImage || '/hero.jpg',
+        roomImage: bookingData.roomImage || '/hotel-images/4.JPG',
         pricePerNight: bookingData.pricePerNight || 350,
         numberOfRooms: bookingData.rooms || 1,
-        
+
         // Dates
         checkIn: bookingData.checkIn,
         checkOut: bookingData.checkOut,
         nights: nights,
-        
+
         // Guests
         adults: bookingData.adults || 1,
         children: bookingData.children || 0,
         totalGuests: bookingData.guests || bookingData.adults || 1,
-        
+
         // Services
         additionalServices: selectedServices.map(id => {
           const service = availableServices.find((s: Service) => s._id === id);
           return service ? { id: service._id, name: service.name, price: service.price } : null;
         }).filter(Boolean),
-        
+
         // Payment
         totalAmount: calculateTotal(),
         paymentMethod: paymentMethod,
@@ -301,17 +301,17 @@ export function BookingClient() {
           if (verifyData.success) {
             clearInterval(checkPaymentStatus);
             paymentCompleted = true;
-            
+
             // Update booking to confirmed status
             await fetch('/api/bookings/confirm-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+              body: JSON.stringify({
                 bookingId: bookingId,
-                reference: data.data.reference 
+                reference: data.data.reference
               }),
             });
-            
+
             setIsProcessing(false);
             setBookingComplete(true);
             console.log('✅ Payment verified and booking confirmed!');
@@ -327,7 +327,7 @@ export function BookingClient() {
       // Clear interval after 2 minutes and check final status
       setTimeout(async () => {
         clearInterval(checkPaymentStatus);
-        
+
         if (!paymentCompleted && bookingId) {
           // Payment timeout - cancel the booking
           await fetch('/api/bookings/cancel', {
@@ -335,7 +335,7 @@ export function BookingClient() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ bookingId }),
           });
-          
+
           setIsProcessing(false);
           alert('Payment timeout. Your booking has been cancelled. Please try again.');
         }
@@ -343,7 +343,7 @@ export function BookingClient() {
 
     } catch (error: any) {
       console.error('Payment error:', error);
-      
+
       // If booking was created but payment failed, cancel it
       if (bookingId) {
         try {
@@ -357,7 +357,7 @@ export function BookingClient() {
           console.error('Failed to cancel booking:', cancelError);
         }
       }
-      
+
       // Show user-friendly error message
       const errorMessage = error.message || 'Payment failed. Please try again with a different payment method.';
       alert(errorMessage);
@@ -389,7 +389,7 @@ export function BookingClient() {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h1>
               <p className="text-sm sm:text-base text-gray-600 px-4">Your reservation at Northern Capital Hotel has been successfully processed.</p>
             </div>
-            
+
             {/* Booking Details Card */}
             <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 text-left">
               <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-3 sm:mb-4">Booking Details</h3>
@@ -412,14 +412,14 @@ export function BookingClient() {
                 </div>
               </div>
             </div>
-            
+
             {/* Confirmation Message */}
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
               <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
                 📧 A confirmation email has been sent to <span className="font-semibold text-[#01a4ff]">{guestDetails.email}</span>. Our team will contact you within 24 hours to finalize your reservation.
               </p>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
@@ -448,367 +448,361 @@ export function BookingClient() {
       <Header />
       <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 sm:mb-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center text-sm sm:text-base text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span className="hidden sm:inline">Back to Room Details</span>
-            <span className="sm:hidden">Back</span>
-          </button>
-          
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Complete Your Booking</h1>
-          <p className="text-sm sm:text-base text-gray-600">Secure your stay at Northern Capital Hotel</p>
-        </div>
+          <div className="mb-6 sm:mb-8">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center text-sm sm:text-base text-gray-600 hover:text-gray-900 mb-4"
+            >
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="hidden sm:inline">Back to Room Details</span>
+              <span className="sm:hidden">Back</span>
+            </button>
 
-        {/* Progress Steps */}
-        <div className="mb-6 sm:mb-8 overflow-x-auto">
-          <div className="flex items-center justify-center min-w-max px-4 sm:px-0">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
-                <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all ${
-                    currentStep >= step 
-                      ? "bg-[#01a4ff] text-white shadow-lg shadow-[#01a4ff]/30" 
-                      : "bg-gray-100 text-gray-400 border-2 border-gray-200"
-                  }`}>
-                    {step}
-                  </div>
-                  <span className={`mt-2 text-xs sm:text-sm font-medium whitespace-nowrap ${
-                    currentStep >= step ? "text-[#01a4ff]" : "text-gray-400"
-                  }`}>
-                    {step === 1 ? "Room" : step === 2 ? "Details" : "Payment"}
-                  </span>
-                </div>
-                {step < 3 && (
-                  <div className={`w-12 sm:w-20 h-1 mx-2 sm:mx-4 rounded-full transition-all ${
-                    currentStep > step ? "bg-[#01a4ff]" : "bg-gray-200"
-                  }`} />
-                )}
-              </div>
-            ))}
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Complete Your Booking</h1>
+            <p className="text-sm sm:text-base text-gray-600">Secure your stay at Northern Capital Hotel</p>
           </div>
-        </div>
 
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_400px]">
-          <div className="space-y-6 sm:space-y-8">
-            {/* Step 1: Room Summary & Additional Services */}
-            {currentStep === 1 && (
-              <>
-                {/* Room Summary */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4">Your Room Selection</h2>
-                  <div className="flex items-start space-x-3 sm:space-x-4">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-200 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0">
-                      <Image 
-                        src={bookingData.roomImage || "/hero.jpg"} 
-                        alt={bookingData.roomName || "Room"} 
-                        width={96} 
-                        height={96} 
-                        className="object-cover w-full h-full"
-                      />
+          {/* Progress Steps */}
+          <div className="mb-6 sm:mb-8 overflow-x-auto">
+            <div className="flex items-center justify-center min-w-max px-4 sm:px-0">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all ${currentStep >= step
+                        ? "bg-[#01a4ff] text-white shadow-lg shadow-[#01a4ff]/30"
+                        : "bg-gray-100 text-gray-400 border-2 border-gray-200"
+                      }`}>
+                      {step}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{bookingData.roomName}</h3>
-                      <div className="text-sm text-gray-600 space-y-1">
-                        <p>{bookingData.checkIn && formatDate(bookingData.checkIn)} - {bookingData.checkOut && formatDate(bookingData.checkOut)}</p>
-                        <p>
-                          {calculateNights()} nights 
-                          {" "}
-                          {bookingData.adults ?? bookingData.guests ?? 1} adult{(bookingData.adults ?? bookingData.guests ?? 1) === 1 ? "" : "s"}
-                          {bookingData.children != null && bookingData.children > 0 && (
-                            <>
-                              {" "}
-                              {bookingData.children} child{bookingData.children === 1 ? "" : "ren"}
-                            </>
-                          )}
-                          {" "}
-                          {bookingData.rooms} room(s)
-                        </p>
-                        <p className="font-semibold text-[#01a4ff]">₵{bookingData.pricePerNight?.toLocaleString()}/night</p>
-                      </div>
-                    </div>
+                    <span className={`mt-2 text-xs sm:text-sm font-medium whitespace-nowrap ${currentStep >= step ? "text-[#01a4ff]" : "text-gray-400"
+                      }`}>
+                      {step === 1 ? "Room" : step === 2 ? "Details" : "Payment"}
+                    </span>
                   </div>
-                </div>
-
-                {/* Additional Services */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Enhance Your Stay</h2>
-                  <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Select additional services to make your experience unforgettable</p>
-                  
-                  {availableServices.length === 0 ? (
-                    <p className="text-sm text-gray-500">No additional services available for this room type.</p>
-                  ) : (
-                    ["transport", "spa", "dining", "activities", "other"].filter(category => 
-                      availableServices.some(s => s.category === category)
-                    ).map((category) => (
-                    <div key={category} className="mb-4 sm:mb-6">
-                      <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 capitalize text-gray-800">
-                        {category === "transport" ? "Transportation" : category}
-                      </h3>
-                      <div className="grid gap-2 sm:gap-3 md:grid-cols-2">
-                        {availableServices
-                          .filter(service => service.category === category)
-                          .map((service) => (
-                            <div
-                              key={service._id}
-                              className={`border rounded-xl sm:rounded-2xl p-3 sm:p-4 cursor-pointer transition-all ${
-                                selectedServices.includes(service._id)
-                                  ? "border-[#01a4ff] bg-[#01a4ff]/5"
-                                  : "border-gray-200 hover:border-gray-300"
-                              }`}
-                              onClick={() => handleServiceToggle(service._id)}
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-sm sm:text-base text-gray-900">{service.name}</h4>
-                                  <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{service.description}</p>
-                                  <p className="font-semibold text-sm sm:text-base text-[#01a4ff] mt-2">₵{service.price.toLocaleString()}</p>
-                                </div>
-                                <div className={`w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center ${
-                                  selectedServices.includes(service._id)
-                                    ? "border-[#01a4ff] bg-[#01a4ff]"
-                                    : "border-gray-300"
-                                }`}>
-                                  {selectedServices.includes(service._id) && (
-                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  ))
+                  {step < 3 && (
+                    <div className={`w-12 sm:w-20 h-1 mx-2 sm:mx-4 rounded-full transition-all ${currentStep > step ? "bg-[#01a4ff]" : "bg-gray-200"
+                      }`} />
                   )}
                 </div>
-              </>
-            )}
-
-            {/* Step 2: Guest Details */}
-            {currentStep === 2 && (
-              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4">Guest Information</h2>
-                <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                    <input
-                      type="text"
-                      value={guestDetails.firstName}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-                    <input
-                      type="text"
-                      value={guestDetails.lastName}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                    <input
-                      type="email"
-                      value={guestDetails.email}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                    <input
-                      type="tel"
-                      value={guestDetails.phone}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                      required
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
-                    <select
-                      value={guestDetails.country}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, country: e.target.value }))}
-                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                      required
-                    >
-                      <option value="">Select Country</option>
-                      <option value="Ghana">Ghana</option>
-                      <option value="Nigeria">Nigeria</option>
-                      <option value="South Africa">South Africa</option>
-                      <option value="Kenya">Kenya</option>
-                      <option value="United States">United States</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                      <option value="Canada">Canada</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
-                    <textarea
-                      value={guestDetails.specialRequests}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, specialRequests: e.target.value }))}
-                      rows={3}
-                      className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
-                      placeholder="Any special requirements or preferences..."
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Payment */}
-            {currentStep === 3 && (
-              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Payment Method</label>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {[
-                      { id: "card", name: "Credit/Debit Card", icon: "💳" },
-                      { id: "mobile", name: "Mobile Money", icon: "📱" },
-                    ].map((method) => (
-                      <div
-                        key={method.id}
-                        className={`border rounded-2xl p-4 cursor-pointer text-center transition-all ${
-                          paymentMethod === method.id
-                            ? "border-[#01a4ff] bg-[#01a4ff]/5"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                        onClick={() => setPaymentMethod(method.id)}
-                      >
-                        <div className="text-2xl mb-2">{method.icon}</div>
-                        <div className="font-medium text-sm">{method.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Card details form removed – Paystack handles card/mobile money UI */}
-
-                {paymentMethod === "mobile" && (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-4">📱</div>
-                    <h3 className="font-semibold text-lg mb-2">Mobile Money Payment</h3>
-                    <p className="text-gray-600 mb-4">You will be redirected to complete payment via MTN Mobile Money or Vodafone Cash</p>
-                    <div className="flex justify-center space-x-4">
-                      <div className="bg-yellow-100 px-4 py-2 rounded-lg text-sm font-medium">MTN MoMo</div>
-                      <div className="bg-red-100 px-4 py-2 rounded-lg text-sm font-medium">Vodafone Cash</div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === "bank" && (
-                  <div className="text-center py-8">
-                    <div className="text-4xl mb-4">🏦</div>
-                    <h3 className="font-semibold text-lg mb-2">Bank Transfer</h3>
-                    <p className="text-gray-600 mb-4">Transfer details will be provided after booking confirmation</p>
-                    <div className="bg-blue-50 p-4 rounded-2xl text-sm">
-                      <p className="font-medium mb-2">Payment Instructions:</p>
-                      <p>1. Complete booking to receive transfer details</p>
-                      <p>2. Make payment within 24 hours</p>
-                      <p>3. Upload payment receipt for verification</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+              ))}
+            </div>
           </div>
 
-          {/* Booking Summary Sidebar */}
-          <div className="lg:sticky lg:top-8">
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
-              <h3 className="font-semibold text-base sm:text-lg mb-4">Booking Summary</h3>
-              
-              <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Room ({calculateNights()} nights)</span>
-                  <span>₵{((bookingData.pricePerNight || 0) * calculateNights() * (bookingData.rooms || 1)).toLocaleString()}</span>
-                </div>
-                
-                {selectedServices.length > 0 && (
-                  <>
-                    <div className="border-t pt-3">
-                      <span className="text-gray-600 font-medium">Additional Services:</span>
-                    </div>
-                    {selectedServices.map(serviceId => {
-                      const service = availableServices.find(s => s._id === serviceId);
-                      return service ? (
-                        <div key={serviceId} className="flex justify-between">
-                          <span className="text-gray-600">{service.name}</span>
-                          <span>₵{service.price.toLocaleString()}</span>
+          <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_400px]">
+            <div className="space-y-6 sm:space-y-8">
+              {/* Step 1: Room Summary & Additional Services */}
+              {currentStep === 1 && (
+                <>
+                  {/* Room Summary */}
+                  <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                    <h2 className="text-lg sm:text-xl font-semibold mb-4">Your Room Selection</h2>
+                    <div className="flex items-start space-x-3 sm:space-x-4">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-200 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0">
+                        <Image
+                          src={bookingData.roomImage || "/hotel-images/4.JPG"}
+                          alt={bookingData.roomName || "Room"}
+                          width={96}
+                          height={96}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">{bookingData.roomName}</h3>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p>{bookingData.checkIn && formatDate(bookingData.checkIn)} - {bookingData.checkOut && formatDate(bookingData.checkOut)}</p>
+                          <p>
+                            {calculateNights()} nights
+                            {" "}
+                            {bookingData.adults ?? bookingData.guests ?? 1} adult{(bookingData.adults ?? bookingData.guests ?? 1) === 1 ? "" : "s"}
+                            {bookingData.children != null && bookingData.children > 0 && (
+                              <>
+                                {" "}
+                                {bookingData.children} child{bookingData.children === 1 ? "" : "ren"}
+                              </>
+                            )}
+                            {" "}
+                            {bookingData.rooms} room(s)
+                          </p>
+                          <p className="font-semibold text-[#01a4ff]">₵{bookingData.pricePerNight?.toLocaleString()}/night</p>
                         </div>
-                      ) : null;
-                    })}
-                  </>
-                )}
-                
-                <div className="border-t pt-2 sm:pt-3">
-                  <div className="flex justify-between font-semibold text-base sm:text-lg">
-                    <span>Total</span>
-                    <span className="text-[#01a4ff]">₵{calculateTotal().toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Services */}
+                  <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Enhance Your Stay</h2>
+                    <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Select additional services to make your experience unforgettable</p>
+
+                    {availableServices.length === 0 ? (
+                      <p className="text-sm text-gray-500">No additional services available for this room type.</p>
+                    ) : (
+                      ["transport", "spa", "dining", "activities", "other"].filter(category =>
+                        availableServices.some(s => s.category === category)
+                      ).map((category) => (
+                        <div key={category} className="mb-4 sm:mb-6">
+                          <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 capitalize text-gray-800">
+                            {category === "transport" ? "Transportation" : category}
+                          </h3>
+                          <div className="grid gap-2 sm:gap-3 md:grid-cols-2">
+                            {availableServices
+                              .filter(service => service.category === category)
+                              .map((service) => (
+                                <div
+                                  key={service._id}
+                                  className={`border rounded-xl sm:rounded-2xl p-3 sm:p-4 cursor-pointer transition-all ${selectedServices.includes(service._id)
+                                      ? "border-[#01a4ff] bg-[#01a4ff]/5"
+                                      : "border-gray-200 hover:border-gray-300"
+                                    }`}
+                                  onClick={() => handleServiceToggle(service._id)}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-semibold text-sm sm:text-base text-gray-900">{service.name}</h4>
+                                      <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{service.description}</p>
+                                      <p className="font-semibold text-sm sm:text-base text-[#01a4ff] mt-2">₵{service.price.toLocaleString()}</p>
+                                    </div>
+                                    <div className={`w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center ${selectedServices.includes(service._id)
+                                        ? "border-[#01a4ff] bg-[#01a4ff]"
+                                        : "border-gray-300"
+                                      }`}>
+                                      {selectedServices.includes(service._id) && (
+                                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Step 2: Guest Details */}
+              {currentStep === 2 && (
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4">Guest Information</h2>
+                  <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                      <input
+                        type="text"
+                        value={guestDetails.firstName}
+                        onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                      <input
+                        type="text"
+                        value={guestDetails.lastName}
+                        onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                      <input
+                        type="email"
+                        value={guestDetails.email}
+                        onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                      <input
+                        type="tel"
+                        value={guestDetails.phone}
+                        onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
+                      <select
+                        value={guestDetails.country}
+                        onChange={(e) => setGuestDetails(prev => ({ ...prev, country: e.target.value }))}
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
+                        required
+                      >
+                        <option value="">Select Country</option>
+                        <option value="Ghana">Ghana</option>
+                        <option value="Nigeria">Nigeria</option>
+                        <option value="South Africa">South Africa</option>
+                        <option value="Kenya">Kenya</option>
+                        <option value="United States">United States</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
+                      <textarea
+                        value={guestDetails.specialRequests}
+                        onChange={(e) => setGuestDetails(prev => ({ ...prev, specialRequests: e.target.value }))}
+                        rows={3}
+                        className="w-full rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:border-[#01a4ff] focus:outline-none"
+                        placeholder="Any special requirements or preferences..."
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
-                {currentStep < 3 && (
-                  <button
-                    onClick={() => handleStepNavigation(currentStep + 1)}
-                    className="w-full bg-[#01a4ff] text-white py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#0084cc] transition-colors"
-                  >
-                    <span className="hidden sm:inline">{currentStep === 1 ? "Continue to Guest Details" : "Continue to Payment"}</span>
-                    <span className="sm:hidden">{currentStep === 1 ? "Next: Guest Details" : "Next: Payment"}</span>
-                  </button>
-                )}
-                
-                {currentStep === 3 && (
-                  <button
-                    onClick={handlePayment}
-                    disabled={isProcessing}
-                    className="w-full bg-[#01a4ff] text-white py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#0084cc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isProcessing ? "Processing..." : `Pay ₵${calculateTotal().toLocaleString()}`}
-                  </button>
-                )}
-                
-                {currentStep > 1 && (
-                  <button
-                    onClick={() => setCurrentStep(prev => prev - 1)}
-                    className="w-full border border-gray-300 text-gray-700 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-gray-50 transition-colors"
-                  >
-                    Back
-                  </button>
-                )}
-              </div>
-              
-              <div className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-gray-500 text-center space-y-1">
-                <p>🔒 Secure payment powered by SSL encryption</p>
-                <p>Free cancellation up to 24 hours before check-in</p>
+              {/* Step 3: Payment */}
+              {currentStep === 3 && (
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                  <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
+
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Payment Method</label>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {[
+                        { id: "card", name: "Credit/Debit Card", icon: "💳" },
+                        { id: "mobile", name: "Mobile Money", icon: "📱" },
+                      ].map((method) => (
+                        <div
+                          key={method.id}
+                          className={`border rounded-2xl p-4 cursor-pointer text-center transition-all ${paymentMethod === method.id
+                              ? "border-[#01a4ff] bg-[#01a4ff]/5"
+                              : "border-gray-200 hover:border-gray-300"
+                            }`}
+                          onClick={() => setPaymentMethod(method.id)}
+                        >
+                          <div className="text-2xl mb-2">{method.icon}</div>
+                          <div className="font-medium text-sm">{method.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Card details form removed – Paystack handles card/mobile money UI */}
+
+                  {paymentMethod === "mobile" && (
+                    <div className="text-center py-8">
+                      <div className="text-4xl mb-4">📱</div>
+                      <h3 className="font-semibold text-lg mb-2">Mobile Money Payment</h3>
+                      <p className="text-gray-600 mb-4">You will be redirected to complete payment via MTN Mobile Money or Vodafone Cash</p>
+                      <div className="flex justify-center space-x-4">
+                        <div className="bg-yellow-100 px-4 py-2 rounded-lg text-sm font-medium">MTN MoMo</div>
+                        <div className="bg-red-100 px-4 py-2 rounded-lg text-sm font-medium">Vodafone Cash</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === "bank" && (
+                    <div className="text-center py-8">
+                      <div className="text-4xl mb-4">🏦</div>
+                      <h3 className="font-semibold text-lg mb-2">Bank Transfer</h3>
+                      <p className="text-gray-600 mb-4">Transfer details will be provided after booking confirmation</p>
+                      <div className="bg-blue-50 p-4 rounded-2xl text-sm">
+                        <p className="font-medium mb-2">Payment Instructions:</p>
+                        <p>1. Complete booking to receive transfer details</p>
+                        <p>2. Make payment within 24 hours</p>
+                        <p>3. Upload payment receipt for verification</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Booking Summary Sidebar */}
+            <div className="lg:sticky lg:top-8">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                <h3 className="font-semibold text-base sm:text-lg mb-4">Booking Summary</h3>
+
+                <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Room ({calculateNights()} nights)</span>
+                    <span>₵{((bookingData.pricePerNight || 0) * calculateNights() * (bookingData.rooms || 1)).toLocaleString()}</span>
+                  </div>
+
+                  {selectedServices.length > 0 && (
+                    <>
+                      <div className="border-t pt-3">
+                        <span className="text-gray-600 font-medium">Additional Services:</span>
+                      </div>
+                      {selectedServices.map(serviceId => {
+                        const service = availableServices.find(s => s._id === serviceId);
+                        return service ? (
+                          <div key={serviceId} className="flex justify-between">
+                            <span className="text-gray-600">{service.name}</span>
+                            <span>₵{service.price.toLocaleString()}</span>
+                          </div>
+                        ) : null;
+                      })}
+                    </>
+                  )}
+
+                  <div className="border-t pt-2 sm:pt-3">
+                    <div className="flex justify-between font-semibold text-base sm:text-lg">
+                      <span>Total</span>
+                      <span className="text-[#01a4ff]">₵{calculateTotal().toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
+                  {currentStep < 3 && (
+                    <button
+                      onClick={() => handleStepNavigation(currentStep + 1)}
+                      className="w-full bg-[#01a4ff] text-white py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#0084cc] transition-colors"
+                    >
+                      <span className="hidden sm:inline">{currentStep === 1 ? "Continue to Guest Details" : "Continue to Payment"}</span>
+                      <span className="sm:hidden">{currentStep === 1 ? "Next: Guest Details" : "Next: Payment"}</span>
+                    </button>
+                  )}
+
+                  {currentStep === 3 && (
+                    <button
+                      onClick={handlePayment}
+                      disabled={isProcessing}
+                      className="w-full bg-[#01a4ff] text-white py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-[#0084cc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isProcessing ? "Processing..." : `Pay ₵${calculateTotal().toLocaleString()}`}
+                    </button>
+                  )}
+
+                  {currentStep > 1 && (
+                    <button
+                      onClick={() => setCurrentStep(prev => prev - 1)}
+                      className="w-full border border-gray-300 text-gray-700 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:bg-gray-50 transition-colors"
+                    >
+                      Back
+                    </button>
+                  )}
+                </div>
+
+                <div className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-gray-500 text-center space-y-1">
+                  <p>🔒 Secure payment powered by SSL encryption</p>
+                  <p>Free cancellation up to 24 hours before check-in</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Authentication Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        redirectTo={`/booking?${searchParams.toString()}`}
-      />
+        {/* Authentication Modal */}
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          redirectTo={`/booking?${searchParams.toString()}`}
+        />
       </div>
     </>
   );

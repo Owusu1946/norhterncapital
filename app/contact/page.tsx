@@ -20,13 +20,13 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     setIsSubmitting(false);
     setSubmitStatus("success");
-    
+
     // Reset form after 3 seconds
     setTimeout(() => {
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
@@ -48,7 +48,7 @@ export default function ContactPage() {
         {/* Hero Section */}
         <section className="relative h-[400px] overflow-hidden">
           <Image
-            src="/hero.jpg"
+            src="/hotel-images/27.JPG"
             alt="Contact Northern Capital Hotel"
             fill
             className="object-cover"

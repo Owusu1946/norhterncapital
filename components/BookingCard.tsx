@@ -175,26 +175,25 @@ export function BookingCard({
   }
 
   const guestLabel = guestParts.join(", ") || "Add guests";
-  const roomsLabel = `${guestAndRoomSelection.rooms} room${
-    guestAndRoomSelection.rooms > 1 ? "s" : ""
-  }`;
+  const roomsLabel = `${guestAndRoomSelection.rooms} room${guestAndRoomSelection.rooms > 1 ? "s" : ""
+    }`;
 
   const guestSummary = `${guestLabel} · ${roomsLabel}`;
 
   const hasBothDates = Boolean(checkInDate && checkOutDate);
   const datesSummary = hasBothDates
     ? `${format(checkInDate as Date, "MMM d")} · ${format(
-        checkOutDate as Date,
-        "MMM d",
-      )}`
+      checkOutDate as Date,
+      "MMM d",
+    )}`
     : "Add dates";
 
   // Check if all required fields are filled
   const isSearchEnabled = Boolean(
-    selectedRoomCategory && 
-    checkInDate && 
-    checkOutDate && 
-    guestAndRoomSelection.adults > 0 && 
+    selectedRoomCategory &&
+    checkInDate &&
+    checkOutDate &&
+    guestAndRoomSelection.adults > 0 &&
     guestAndRoomSelection.rooms > 0
   );
 
@@ -245,9 +244,9 @@ export function BookingCard({
       setIsDatePickerOpen(false);
       setIsGuestsOpen(false);
       setIsRoomTypeOpen(false);
-      
+
       setIsSearching(true);
-      
+
       try {
         // Use real room type data if available
         if (currentRoomType) {
@@ -256,7 +255,7 @@ export function BookingCard({
             slug: currentRoomType.slug || selectedRoomCategory.toLowerCase().replace(/\s+/g, '-'),
             name: currentRoomType.name,
             category: selectedRoomCategory,
-            image: currentRoomType.image || "/hero.jpg",
+            image: currentRoomType.image || "/hotel-images/4.JPG",
             price: currentRoomType.priceFrom || currentRoomType.pricePerNight || 250,
             available: currentRoomType.totalRooms || 5,
             maxGuests: currentRoomType.maxGuests || 2,
@@ -265,13 +264,13 @@ export function BookingCard({
             amenities: currentRoomType.amenities || ["Free WiFi", "TV", "Coffee Maker", "Air Conditioning"],
             description: currentRoomType.description || `Comfortable ${selectedRoomCategory.toLowerCase()} with modern amenities and stunning views.`
           };
-          
+
           setSearchResults([availableRoom]);
         } else {
           // Fallback if room type not found
           setSearchResults([]);
         }
-        
+
         setShowSearchResults(true);
       } catch (error) {
         console.error('Error searching rooms:', error);
@@ -279,7 +278,7 @@ export function BookingCard({
       } finally {
         setIsSearching(false);
       }
-      
+
       // Call the original onSearch callback
       onSearch();
     }
@@ -287,9 +286,9 @@ export function BookingCard({
 
   const handleBookRoom = (room: AvailableRoom) => {
     if (!checkInDate || !checkOutDate) return;
-    
+
     const totalGuests = guestAndRoomSelection.adults + guestAndRoomSelection.children;
-    
+
     // Build query parameters for booking page
     const params = new URLSearchParams({
       roomSlug: room.slug,
@@ -303,7 +302,7 @@ export function BookingCard({
       rooms: guestAndRoomSelection.rooms.toString(),
       price: room.price.toString(),
     });
-    
+
     // Navigate to booking page with room slug
     router.push(`/booking?${params.toString()}`);
   };
@@ -331,11 +330,10 @@ export function BookingCard({
                   onRoomCategoryChange(category);
                   setIsRoomTypeOpen(false);
                 }}
-                className={`w-full rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors ${
-                  selectedRoomCategory === category
+                className={`w-full rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors ${selectedRoomCategory === category
                     ? "border-[#01a4ff] bg-[#01a4ff]/10 text-[#01a4ff]"
                     : "border-black/10 bg-white text-black/70 hover:border-[#01a4ff]/40 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {category}
               </button>
@@ -394,11 +392,10 @@ export function BookingCard({
             type="button"
             onClick={handleSearchClick}
             disabled={!isSearchEnabled}
-            className={`flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition-all md:w-auto ${
-              isSearchEnabled
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition-all md:w-auto ${isSearchEnabled
                 ? "bg-[#01a4ff] text-white hover:bg-[#0084cc] hover:shadow-md"
                 : "cursor-not-allowed bg-gray-300 text-gray-500"
-            }`}
+              }`}
           >
             {isSearching ? (
               <>
@@ -422,11 +419,10 @@ export function BookingCard({
             key={category}
             type="button"
             onClick={() => onRoomCategoryChange(category)}
-            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
-              selectedRoomCategory === category
+            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${selectedRoomCategory === category
                 ? "border-[#01a4ff] bg-[#01a4ff] text-white shadow-sm"
                 : "border-black/10 bg-white text-black/70 hover:border-[#01a4ff]/40 hover:text-black"
-            }`}
+              }`}
           >
             {category}
           </button>
@@ -441,7 +437,7 @@ export function BookingCard({
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
             onClick={() => setWarningModal({ open: false, message: null })}
           />
-          
+
           {/* Modal */}
           <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 transform px-4">
             <div className="rounded-2xl bg-white p-6 shadow-2xl">
@@ -469,7 +465,7 @@ export function BookingCard({
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowSearchResults(false)}
           />
-          
+
           {/* Modal */}
           <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 transform px-4">
             <div className="max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
@@ -750,11 +746,10 @@ function GuestRow({ label, value, min, max, onChange, hint }: GuestRowProps) {
           <button
             type="button"
             onClick={() => onChange(max ? Math.min(max, value + 1) : value + 1)}
-            className={`flex h-7 w-7 items-center justify-center rounded-full border text-sm transition-colors ${
-              isAtMax 
+            className={`flex h-7 w-7 items-center justify-center rounded-full border text-sm transition-colors ${isAtMax
                 ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "border-[#01a4ff] bg-[#01a4ff] text-white hover:bg-[#0084cc]"
-            }`}
+              }`}
             disabled={isAtMax}
           >
             +

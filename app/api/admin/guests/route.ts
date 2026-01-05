@@ -16,19 +16,19 @@ export async function GET(request: NextRequest) {
   try {
     // Verify admin authentication
     const token = request.cookies.get("auth_token")?.value;
-    
+
     if (!token) {
       console.log("No auth token found in cookies");
       return errorResponse("Please log in to access this page", 401);
     }
 
     const decoded = verifyToken(token);
-    
+
     if (!decoded) {
       console.log("Invalid or expired token");
       return errorResponse("Session expired. Please log in again.", 401);
     }
-    
+
     // Debug role information
     console.log("🔍 Guests API - Full decoded token:", JSON.stringify(decoded));
     console.log("🔍 Guests API - User role (raw):", decoded.role);
@@ -36,19 +36,19 @@ export async function GET(request: NextRequest) {
     console.log("🔍 Guests API - User role length:", decoded.role?.length);
     console.log("🔍 Guests API - Role trimmed:", decoded.role?.trim());
     console.log("🔍 Guests API - Role lowercase:", decoded.role?.toLowerCase());
-    
+
     // Check if user has admin or staff role (with normalization)
     const normalizedRole = decoded.role?.toLowerCase()?.trim();
     const hasPermission = normalizedRole === "admin" || normalizedRole === "staff";
-    
+
     console.log("🔍 Guests API - Normalized role:", normalizedRole);
     console.log("🔍 Guests API - Has permission:", hasPermission);
-    
+
     if (!hasPermission) {
       console.log(`❌ Insufficient permissions: user role is '${decoded.role}' (normalized: '${normalizedRole}')`);
       return errorResponse("You don't have permission to access this page", 403);
     }
-    
+
     console.log("✅ Guests API - Authorization successful for role:", decoded.role);
 
     // Connect to database
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       tomorrow.setDate(tomorrow.getDate() + 1);
       const in3Days = new Date(today);
       in3Days.setDate(in3Days.getDate() + 3);
-      
+
       // Create sample booking data (cast as any to avoid TypeScript issues with partial data)
       bookings = [
         {
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
           guestCountry: "Ghana",
           roomName: "Deluxe Suite",
           roomSlug: "deluxe-suite",
-          roomImage: "/hero.jpg",
+          roomImage: "/hotel-images/4.JPG",
           pricePerNight: 250,
           nights: 2,
           checkIn: tomorrow,
@@ -163,7 +163,7 @@ export async function PUT(request: NextRequest) {
   try {
     // Verify admin authentication
     const token = request.cookies.get("auth_token")?.value;
-    
+
     if (!token) {
       return errorResponse("Please log in to access this page", 401);
     }
@@ -172,7 +172,7 @@ export async function PUT(request: NextRequest) {
     if (!decoded) {
       return errorResponse("Session expired. Please log in again.", 401);
     }
-    
+
     if (decoded.role !== "admin" && decoded.role !== "staff") {
       return errorResponse("You don't have permission to perform this action", 403);
     }
@@ -270,7 +270,7 @@ export async function PUT(request: NextRequest) {
     console.log(`✅ Guest ${booking.guestFirstName} ${booking.guestLastName} status updated to ${status}`);
 
     return successResponse(
-      { 
+      {
         booking,
         message: `Guest ${status === "checked_in" ? "checked in" : status === "checked_out" ? "checked out" : "updated"} successfully`
       }
@@ -285,10 +285,10 @@ export async function PUT(request: NextRequest) {
 function determineGuestStatus(booking: any): "upcoming" | "checked_in" | "checked_out" {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const checkIn = new Date(booking.checkIn);
   checkIn.setHours(0, 0, 0, 0);
-  
+
   if (booking.bookingStatus === "checked_in") {
     return "checked_in";
   } else if (booking.bookingStatus === "checked_out") {
@@ -298,7 +298,7 @@ function determineGuestStatus(booking: any): "upcoming" | "checked_in" | "checke
       return "upcoming";
     }
   }
-  
+
   // Default to upcoming for any other case
   return "upcoming";
 }

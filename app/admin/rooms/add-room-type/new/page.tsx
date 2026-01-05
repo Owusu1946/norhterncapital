@@ -82,7 +82,7 @@ export default function NewRoomTypePage() {
       const response = await fetch("/api/services", {
         credentials: "include",
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
@@ -191,13 +191,13 @@ export default function NewRoomTypePage() {
       try {
         const formData = new FormData();
         formData.append("files", mainImageFile);
-        
+
         const uploadResponse = await fetch("/api/upload", {
           method: "POST",
           credentials: "include",
           body: formData,
         });
-        
+
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
           if (uploadData.success && uploadData.data.urls.length > 0) {
@@ -214,13 +214,13 @@ export default function NewRoomTypePage() {
       try {
         const formData = new FormData();
         galleryFiles.forEach(file => formData.append("files", file));
-        
+
         const uploadResponse = await fetch("/api/upload", {
           method: "POST",
           credentials: "include",
           body: formData,
         });
-        
+
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
           if (uploadData.success) {
@@ -247,8 +247,8 @@ export default function NewRoomTypePage() {
       maxAdults: Number(maxAdults || maxGuests || 0),
       maxChildren: Number(maxChildren || 0),
       totalRooms: Number(totalRooms || 1),
-      mainImage: uploadedMainImage || "/hero.jpg",
-      gallery: uploadedGallery.length > 0 ? uploadedGallery : ["/hero.jpg", "/hero.jpg", "/hero.jpg"],
+      mainImage: uploadedMainImage || "/hotel-images/4.JPG",
+      gallery: uploadedGallery.length > 0 ? uploadedGallery : ["/hotel-images/4.JPG", "/hotel-images/4.JPG", "/hotel-images/4.JPG"],
     };
 
     try {
@@ -260,7 +260,7 @@ export default function NewRoomTypePage() {
       });
 
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         setStatusMessage("Room type created successfully!");
         setTimeout(() => {
@@ -718,7 +718,7 @@ export default function NewRoomTypePage() {
                 <p className="mb-4 text-xs text-gray-500">
                   Select services that guests can add to their booking for this room type
                 </p>
-                
+
                 {services.length === 0 ? (
                   <p className="text-sm text-gray-400">No services available. Add services from the Services menu.</p>
                 ) : (

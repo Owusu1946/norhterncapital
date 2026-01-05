@@ -12,7 +12,7 @@ export function AboutHotelSection() {
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5">
             <div className="group relative col-span-2 h-44 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm shadow-black/5 transition-transform duration-500 hover:-translate-y-1 hover:shadow-md hover:shadow-black/10 sm:h-56">
               <Image
-                src="/hero.jpg"
+                src="/hotel-images/6.JPG"
                 alt="Northern Capital Hotel suite"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -25,7 +25,7 @@ export function AboutHotelSection() {
 
             <div className="group relative h-32 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm shadow-black/5 transition-transform duration-500 hover:-translate-y-1 hover:shadow-md hover:shadow-black/10 sm:h-40">
               <Image
-                src="/hero.jpg"
+                src="/hotel-images/IMG_3725.PNG"
                 alt="Warm lounge corner at Northern Capital Hotel"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -38,7 +38,7 @@ export function AboutHotelSection() {
 
             <div className="group relative h-32 translate-y-3 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm shadow-black/5 transition-transform duration-500 hover:-translate-y-4 hover:shadow-md hover:shadow-black/10 sm:h-40 sm:translate-y-4">
               <Image
-                src="/hero.jpg"
+                src="/hotel-images/19.JPG"
                 alt="Dining and social space at Northern Capital Hotel"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"

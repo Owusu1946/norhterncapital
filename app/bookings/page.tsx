@@ -7,13 +7,13 @@ import { useReactToPrint } from "react-to-print";
 import { Header } from "@/components/sections/Header";
 import { BookingReceipt } from "@/components/BookingReceipt";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  CheckCircle,
+  XCircle,
   AlertCircle,
   Download,
   Mail,
@@ -48,7 +48,7 @@ const mapBookingStatus = (bookingStatus: string, checkOutDate: string): Booking[
   const checkOut = new Date(checkOutDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   if (bookingStatus === "cancelled") return "cancelled";
   if (bookingStatus === "checked_out") return "completed";
   if (checkOut < today && bookingStatus !== "pending" && bookingStatus !== "confirmed") return "completed";
@@ -179,7 +179,7 @@ export default function BookingsPage() {
             id: b.id,
             bookingReference: b.bookingReference,
             roomName: b.roomName,
-            roomImage: b.roomImage || '/hero.jpg',
+            roomImage: b.roomImage || '/hotel-images/4.JPG',
             checkIn: b.checkIn.split('T')[0], // Format date
             checkOut: b.checkOut.split('T')[0],
             guests: b.totalGuests || b.adults || 1,
@@ -194,7 +194,7 @@ export default function BookingsPage() {
             adults: b.adults,
             children: b.children,
           }));
-          
+
           setBookings(mappedBookings);
           console.log('✅ Loaded', mappedBookings.length, 'bookings from database');
         }
@@ -355,7 +355,7 @@ export default function BookingsPage() {
   const handleContactHotel = (booking: Booking) => {
     const subject = `Inquiry about Booking ${booking.bookingReference}`;
     const body = `Dear Northern Capital Hotel,\n\nI would like to inquire about my booking:\n\nBooking Reference: ${booking.bookingReference}\nRoom: ${booking.roomName}\nCheck-in: ${formatDate(booking.checkIn)}\nCheck-out: ${formatDate(booking.checkOut)}\n\nMy question:\n\n[Please type your question here]\n\nBest regards,\n${user?.firstName} ${user?.lastName}`;
-    
+
     // Open email client
     window.location.href = `mailto:reservations@northerncapitalhotel.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
@@ -385,7 +385,7 @@ export default function BookingsPage() {
 
       setShowCancelModal(false);
       setBookingToCancel(null);
-      
+
       // Show success message (you can add a toast notification here)
       alert('Booking cancelled successfully. A refund will be processed within 5-7 business days.');
     } catch (error) {
@@ -428,21 +428,19 @@ export default function BookingsPage() {
             <div className="mt-8 flex gap-2 border-b border-black/5">
               <button
                 onClick={() => setActiveTab("upcoming")}
-                className={`px-4 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "upcoming"
+                className={`px-4 py-3 text-sm font-medium transition-colors ${activeTab === "upcoming"
                     ? "border-b-2 border-[#01a4ff] text-[#01a4ff]"
                     : "text-black/60 hover:text-black"
-                }`}
+                  }`}
               >
                 Upcoming ({upcomingBookings.length})
               </button>
               <button
                 onClick={() => setActiveTab("past")}
-                className={`px-4 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "past"
+                className={`px-4 py-3 text-sm font-medium transition-colors ${activeTab === "past"
                     ? "border-b-2 border-[#01a4ff] text-[#01a4ff]"
                     : "text-black/60 hover:text-black"
-                }`}
+                  }`}
               >
                 Past ({pastBookings.length})
               </button>
@@ -637,7 +635,7 @@ export default function BookingsPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                              <button 
+                              <button
                                 onClick={() => handleDownloadReceipt(booking)}
                                 className="flex items-center gap-2 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
                                 style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -648,7 +646,7 @@ export default function BookingsPage() {
                               </button>
                               {booking.status === "confirmed" && (
                                 <>
-                                  <button 
+                                  <button
                                     onClick={() => handleContactHotel(booking)}
                                     className="flex items-center gap-2 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
                                     style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -657,7 +655,7 @@ export default function BookingsPage() {
                                     <span className="hidden sm:inline">Contact Hotel</span>
                                     <span className="sm:hidden">Contact</span>
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => {
                                       setBookingToCancel(booking);
                                       setShowCancelModal(true);
@@ -671,7 +669,7 @@ export default function BookingsPage() {
                                 </>
                               )}
                               {(booking.status === "completed" || booking.status === "cancelled") && activeTab === "past" && (
-                                <button 
+                                <button
                                   onClick={() => handleRebook(booking)}
                                   className="flex items-center gap-2 rounded-2xl border border-[#01a4ff] bg-[#01a4ff] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0084cc] active:bg-[#006699] touch-manipulation"
                                   style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -762,12 +760,12 @@ export default function BookingsPage() {
             <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <AlertCircle className="h-6 w-6 text-red-600" />
             </div>
-            
+
             <h2 className="text-2xl font-semibold text-gray-900">Cancel Booking?</h2>
             <p className="mt-3 text-sm leading-relaxed text-gray-600">
               Are you sure you want to cancel your booking for <span className="font-semibold">{bookingToCancel.roomName}</span>?
             </p>
-            
+
             <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -787,7 +785,7 @@ export default function BookingsPage() {
 
             <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
               <p className="text-xs text-yellow-800">
-                <strong>Cancellation Policy:</strong> Free cancellation up to 48 hours before check-in. 
+                <strong>Cancellation Policy:</strong> Free cancellation up to 48 hours before check-in.
                 A refund will be processed within 5-7 business days.
               </p>
             </div>

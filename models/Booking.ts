@@ -8,7 +8,7 @@ export interface IBooking extends Document {
   guestLastName: string;
   guestPhone: string;
   guestCountry: string;
-  
+
   // Room Details
   roomSlug: string;
   roomName: string;
@@ -16,37 +16,37 @@ export interface IBooking extends Document {
   roomNumber?: string;
   pricePerNight: number;
   numberOfRooms: number;
-  
+
   // Dates
   checkIn: Date;
   checkOut: Date;
   nights: number;
-  
+
   // Guest Count
   adults: number;
   children: number;
   totalGuests: number;
-  
+
   // Additional Services
   additionalServices: {
     id: string;
     name: string;
     price: number;
   }[];
-  
+
   // Special Requests
   specialRequests?: string;
-  
+
   // Payment Information
   totalAmount: number;
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
   paymentMethod: string;
   paymentReference?: string;
   paystackReference?: string;
-  
+
   // Booking Status
   bookingStatus: "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled";
-  
+
   // Metadata
   bookingSource: "website" | "walk_in" | "agent" | "phone";
   createdAt: Date;
@@ -88,7 +88,7 @@ const BookingSchema = new Schema<IBooking>(
       required: [true, "Guest country is required"],
       trim: true,
     },
-    
+
     // Room Details
     roomSlug: {
       type: String,
@@ -101,7 +101,7 @@ const BookingSchema = new Schema<IBooking>(
     },
     roomImage: {
       type: String,
-      default: "/hero.jpg",
+      default: "/hotel-images/4.JPG",
     },
     roomNumber: {
       type: String,
@@ -118,7 +118,7 @@ const BookingSchema = new Schema<IBooking>(
       min: 1,
       default: 1,
     },
-    
+
     // Dates
     checkIn: {
       type: Date,
@@ -135,7 +135,7 @@ const BookingSchema = new Schema<IBooking>(
       required: [true, "Number of nights is required"],
       min: 1,
     },
-    
+
     // Guest Count
     adults: {
       type: Number,
@@ -152,7 +152,7 @@ const BookingSchema = new Schema<IBooking>(
       required: [true, "Total guests is required"],
       min: 1,
     },
-    
+
     // Additional Services
     additionalServices: [
       {
@@ -161,13 +161,13 @@ const BookingSchema = new Schema<IBooking>(
         price: { type: Number, required: true, min: 0 },
       },
     ],
-    
+
     // Special Requests
     specialRequests: {
       type: String,
       trim: true,
     },
-    
+
     // Payment Information
     totalAmount: {
       type: Number,
@@ -195,7 +195,7 @@ const BookingSchema = new Schema<IBooking>(
       sparse: true,
       index: true,
     },
-    
+
     // Booking Status
     bookingStatus: {
       type: String,
@@ -203,7 +203,7 @@ const BookingSchema = new Schema<IBooking>(
       default: "pending",
       index: true, // Index for status queries
     },
-    
+
     // Metadata
     bookingSource: {
       type: String,
