@@ -92,7 +92,6 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-black">Address</h3>
                       <p className="mt-1 text-sm text-black/70">
-                        123 Central Business District<br />
                         Savelugu, Northern Region<br />
                         Ghana
                       </p>
@@ -107,8 +106,8 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-black">Phone</h3>
                       <p className="mt-1 text-sm text-black/70">
-                        +233 (0) 372 123 456<br />
-                        +233 (0) 372 123 457
+                        +233 (0) 538 514 700<br />
+                        +233 (0) 538 424 430
                       </p>
                     </div>
                   </div>
@@ -135,9 +134,7 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-black">Front Desk Hours</h3>
                       <p className="mt-1 text-sm text-black/70">
-                        24/7 - We're always here for you<br />
-                        Check-in: 3:00 PM<br />
-                        Check-out: 12:00 PM
+                        24/7 - We're always here for you
                       </p>
                     </div>
                   </div>

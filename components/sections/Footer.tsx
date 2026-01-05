@@ -84,7 +84,7 @@ export function Footer() {
                 <MapPin size={16} className="text-[#01a4ff] mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-black/70">
-                    123 Central Business District<br />
+                    Savelugu<br />
                     Tamale, Northern Region<br />
                     Ghana
                   </p>
@@ -92,7 +92,8 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <Phone size={16} className="text-[#01a4ff] flex-shrink-0" />
-                <p className="text-sm text-black/70">+233 (0) 372 123 456</p>
+                <p className="text-sm text-black/70">+233 (0) 538 514 700</p>
+                <p className="text-sm text-black/70">+233 (0) 538 424 430</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail size={16} className="text-[#01a4ff] flex-shrink-0" />
@@ -103,7 +104,6 @@ export function Footer() {
                 <div>
                   <p className="text-sm text-black/70">
                     24/7 Front Desk<br />
-                    Check-in: 3:00 PM<br />
                     Check-out: 12:00 PM
                   </p>
                 </div>
@@ -138,7 +138,7 @@ export function Footer() {
         <div className="mx-auto max-w-6xl px-6 py-6 sm:px-10">
           <div className="flex flex-col items-center justify-between space-y-4 text-xs text-black/60 md:flex-row md:space-y-0">
             <div>
-              &copy; 2024 Northern Capital Hotel. All rights reserved.
+              &copy; 2025 Northern Capital Hotel. All rights reserved.
             </div>
             <div className="flex space-x-6">
               <Link href="/privacy" className="transition-colors hover:text-[#01a4ff]">
