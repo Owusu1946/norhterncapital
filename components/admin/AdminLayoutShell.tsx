@@ -9,12 +9,12 @@ export function AdminLayoutShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const shouldHideFooter = pathname.startsWith("/admin") || pathname.startsWith("/dashboard");
 
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">{children}</main>
-      {!isAdmin && <Footer />}
+      {!shouldHideFooter && <Footer />}
     </div>
   );
 }
