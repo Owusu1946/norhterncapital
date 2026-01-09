@@ -235,7 +235,7 @@ export default function AboutPage() {
               Experience Northern Capital Hotel
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-white/70">
-              Whether you're here for business or leisure, we're ready to make your stay memorable.
+              Whether you're here for business or leisure, we're ready to make your stay memorable and luxurious
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <a
