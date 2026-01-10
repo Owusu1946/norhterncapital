@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: false,
   register: true,
   scope: '/admin',
   sw: 'sw.js',
+  cacheStartUrl: false,
+  dynamicStartUrl: true,
 });
 
 const nextConfig: NextConfig = {

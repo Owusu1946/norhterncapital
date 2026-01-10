@@ -28,10 +28,17 @@ export const metadata: Metadata = {
     },
 };
 
+import { PWARegistration } from "@/components/admin/PWARegistration";
+
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <>
+            <PWARegistration />
+            {children}
+        </>
+    );
 }
