@@ -24,10 +24,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withPWA = require("@ducanh2912/next-pwa").default({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  scope: "/admin",
-});
+// const withPWA = require("@ducanh2912/next-pwa").default({
+//   dest: "public",
+//   disable: process.env.NODE_ENV === "development",
+//   scope: "/admin",
+// });
 
-export default withPWA(nextConfig);
+// export default withPWA(nextConfig);
+export default nextConfig;
