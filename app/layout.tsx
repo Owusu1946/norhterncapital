@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: "Experience luxury and comfort at Northern Capital Hotel in Tamale. Book your stay with us for exceptional service and modern amenities.",
 };
 
+import NextTopLoader from 'nextjs-toploader';
+import { GlobalLoaderProvider } from "@/components/ui/GlobalLoader";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,8 +32,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextTopLoader
+          color="#2563eb"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #2563eb,0 0 5px #2563eb"
+        />
         <AuthProvider>
-          <AdminLayoutShell>{children}</AdminLayoutShell>
+          <GlobalLoaderProvider>
+            <AdminLayoutShell>{children}</AdminLayoutShell>
+          </GlobalLoaderProvider>
         </AuthProvider>
       </body>
     </html>
