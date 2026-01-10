@@ -12,8 +12,8 @@ export async function authenticateAdmin(
   request: NextRequest
 ): Promise<{ user: any | null; error: any }> {
   try {
-    // Get auth token from cookie (shared with middleware/login)
-    const token = request.cookies.get("auth_token")?.value;
+    // Get admin auth token from cookie
+    const token = request.cookies.get("admin_auth_token")?.value;
 
     if (!token) {
       return {
@@ -47,25 +47,25 @@ export async function authenticateAdmin(
     const user = await User.findById(decoded.userId);
 
     if (!user || !user.isActive) {
-      return { 
-        user: null, 
-        error: errorResponse("User not found or inactive.", 404) 
+      return {
+        user: null,
+        error: errorResponse("User not found or inactive.", 404)
       };
     }
 
     // Verify user still has admin/staff role
     if (user.role !== "admin" && user.role !== "staff") {
-      return { 
-        user: null, 
-        error: errorResponse("Access denied. Admin privileges required.", 403) 
+      return {
+        user: null,
+        error: errorResponse("Access denied. Admin privileges required.", 403)
       };
     }
 
     return { user, error: null };
   } catch (error) {
-    return { 
-      user: null, 
-      error: errorResponse("Authentication failed.", 401) 
+    return {
+      user: null,
+      error: errorResponse("Authentication failed.", 401)
     };
   }
 }
@@ -77,15 +77,15 @@ export async function requireAdminRole(
   request: NextRequest
 ): Promise<{ user: any | null; error: any }> {
   const { user, error } = await authenticateAdmin(request);
-  
+
   if (error) return { user: null, error };
-  
+
   if (user.role !== "admin") {
-    return { 
-      user: null, 
-      error: errorResponse("Access denied. Admin role required.", 403) 
+    return {
+      user: null,
+      error: errorResponse("Access denied. Admin role required.", 403)
     };
   }
-  
+
   return { user, error: null };
 }

@@ -9,24 +9,24 @@ export function middleware(request: NextRequest) {
   // --- ADMIN ROUTES PROTECTION ---
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     console.log("🔒 Protected admin route detected");
-    const authToken = request.cookies.get('auth_token')?.value;
-    console.log("🍪 Auth token present:", !!authToken);
+    const adminToken = request.cookies.get('admin_auth_token')?.value;
+    console.log("🍪 Admin auth token present:", !!adminToken);
 
-    if (!authToken) {
-      console.log("❌ No token found, redirecting to login");
+    if (!adminToken) {
+      console.log("❌ No admin token found, redirecting to login");
       const loginUrl = new URL('/admin/login', request.url);
       return NextResponse.redirect(loginUrl);
     }
 
-    console.log("🔍 Verifying token...");
-    const decoded = verifyJWTEdge(authToken);
-    console.log("Token decoded:", decoded ? "✅ Valid" : "❌ Invalid");
+    console.log("🔍 Verifying admin token...");
+    const decoded = verifyJWTEdge(adminToken);
+    console.log("Admin token decoded:", decoded ? "✅ Valid" : "❌ Invalid");
 
     if (!decoded) {
-      console.log("❌ Invalid token, redirecting to login");
+      console.log("❌ Invalid admin token, redirecting to login");
       const loginUrl = new URL('/admin/login', request.url);
       const response = NextResponse.redirect(loginUrl);
-      response.cookies.delete('auth_token');
+      response.cookies.delete('admin_auth_token');
       return response;
     }
 
@@ -45,11 +45,11 @@ export function middleware(request: NextRequest) {
   // Redirect authenticated admin users away from login page
   if (pathname === '/admin/login') {
     console.log("📝 On admin login page, checking if already authenticated");
-    const authToken = request.cookies.get('auth_token')?.value;
-    console.log("🍪 Token present:", !!authToken);
+    const adminToken = request.cookies.get('admin_auth_token')?.value;
+    console.log("🍪 Admin token present:", !!adminToken);
 
-    if (authToken) {
-      const decoded = verifyJWTEdge(authToken);
+    if (adminToken) {
+      const decoded = verifyJWTEdge(adminToken);
       console.log("Token valid:", !!decoded);
 
       if (decoded && (decoded.role === 'admin' || decoded.role === 'staff')) {

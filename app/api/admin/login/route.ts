@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: NextRequest) {
   console.log("\n🔐 ===== ADMIN LOGIN ATTEMPT =====");
-  
+
   try {
     // Parse request body
     console.log("📥 Parsing request body...");
@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
 
     // Find user by email (include password for comparison)
     console.log("🔍 Looking for user:", email.toLowerCase());
-    const user = await User.findOne({ 
+    const user = await User.findOne({
       email: email.toLowerCase(),
-      isActive: true 
+      isActive: true
     }).select("+password");
 
     if (!user) {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     console.log("🔒 Comparing passwords...");
     const isPasswordValid = await user.comparePassword(password);
     console.log("Password valid:", isPasswordValid);
-    
+
     if (!isPasswordValid) {
       console.log("❌ Invalid password");
       return errorResponse("Invalid email or password", 401);
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Set HTTP-only cookie
     console.log("🍪 Setting auth_token cookie...");
     response.cookies.set({
-      name: "auth_token",  // Changed to auth_token for consistency
+      name: "admin_auth_token",  // Use dedicated admin token
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
