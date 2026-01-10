@@ -11,7 +11,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
     title: "Northern Capital Hotel - Admin Dashboard",
     description: "Administrative control panel for Northern Capital Hotel",
-    manifest: "/manifest.json",
+    manifest: "/manifest-admin.json",
     appleWebApp: {
         capable: true,
         statusBarStyle: "default",

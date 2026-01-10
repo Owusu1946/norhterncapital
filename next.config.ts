@@ -3,7 +3,7 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   disable: false,
   register: true,
-  scope: '/admin',
+  scope: '/',
   sw: 'sw.js',
   cacheStartUrl: false,
   dynamicStartUrl: true,
