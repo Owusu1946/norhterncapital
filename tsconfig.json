@@ -27,7 +27,13 @@
         "./*"
       ]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": [
+      "node",
+      "react",
+      "react-dom",
+      "minimatch"
+    ]
   },
   "include": [
     "next-env.d.ts",
